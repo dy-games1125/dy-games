@@ -7,38 +7,138 @@
   <script src="/socket.io/socket.io.js"></script>
   <style>
     * { box-sizing: border-box; }
-    body { font-family: 'Noto Sans KR', sans-serif; padding: 20px; background-color: #f4f6f9; max-width: 500px; margin: 0 auto; color: #333; }
-    .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 15px; }
-    #chat-box { height: 200px; border: 1px solid #e0e0e0; overflow-y: auto; padding: 10px; border-radius: 8px; background: #fafafa; margin-bottom: 10px; }
+    
+    /* 나무 판자 배경 스타일 */
+    body {
+      background-color: #3b2314;
+      background-image: 
+        linear-gradient(90deg, rgba(255,255,255,.03) 50%, transparent 50%),
+        linear-gradient(rgba(0,0,0,.3) 50%, transparent 50%);
+      background-size: 80px 80px, 4px 4px;
+      font-family: 'Malgun Gothic', sans-serif;
+      padding: 20px;
+      max-width: 550px;
+      margin: 0 auto;
+      color: #fff8e7;
+    }
+
+    /* 목재 카드 스타일 */
+    .card {
+      background: #5c3a21;
+      border: 4px solid #2d180c;
+      box-shadow: inset 0 0 10px rgba(0,0,0,0.8), 0 8px 16px rgba(0,0,0,0.6);
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 15px;
+    }
+
+    #chat-box {
+      height: 200px;
+      border: 2px solid #2d180c;
+      overflow-y: auto;
+      padding: 10px;
+      border-radius: 8px;
+      background: #2a160a;
+      margin-bottom: 10px;
+    }
+
     .msg { margin-bottom: 8px; word-break: break-all; }
-    .msg.system { color: #6b7280; font-size: 0.9em; font-style: italic; }
-    .msg.word { font-weight: bold; color: #1e40af; }
+    .msg.system { color: #f39c12; font-size: 0.9em; font-style: italic; }
+    .msg.word { font-weight: bold; color: #a3e635; }
+
     .rps-btns { display: flex; justify-content: center; gap: 10px; margin: 15px 0; }
-    .rps-btns button { font-size: 1.2rem; padding: 12px 20px; cursor: pointer; border-radius: 8px; border: 1px solid #d1d5db; background: #ffffff; font-weight: bold; }
-    .turn-highlight { background: #eef2ff; border: 2px solid #6366f1; padding: 10px; border-radius: 8px; font-weight: bold; text-align: center; margin-bottom: 10px; }
-    .timer { font-size: 1.1rem; color: #dc2626; font-weight: bold; text-align: center; margin-bottom: 8px; }
-    input[type="text"] { padding: 10px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 0.95rem; }
-    button.btn { padding: 10px; background: #4f46e5; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; }
-    button.btn:disabled { background: #9ca3af; cursor: not-allowed; }
-    .btn-danger { background: #ef4444 !important; }
-    .code-box { background: #f3f4f6; padding: 6px 10px; border-radius: 6px; font-weight: bold; color: #4f46e5; }
+    .rps-btns button {
+      font-size: 1.2rem;
+      padding: 12px 20px;
+      cursor: pointer;
+      border-radius: 8px;
+      border: 2px solid #2d180c;
+      background: #8c532b;
+      color: #fff;
+      font-weight: bold;
+    }
+
+    .timer { font-size: 1.1rem; color: #ef4444; font-weight: bold; text-align: center; margin-bottom: 8px; }
+    
+    input[type="text"] {
+      padding: 10px;
+      border: 2px solid #2d180c;
+      border-radius: 6px;
+      font-size: 0.95rem;
+      background: #fef3c7;
+      color: #1e1007;
+      font-weight: bold;
+    }
+
+    button.btn {
+      padding: 10px;
+      background: #8c532b;
+      color: #fff;
+      border: 2px solid #2d180c;
+      border-radius: 6px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    button.btn:hover { background: #a66334; }
+    button.btn:disabled { background: #523b2b; cursor: not-allowed; }
+    .btn-danger { background: #dc2626 !important; }
+
+    .code-box { background: #2a160a; padding: 6px 10px; border-radius: 6px; font-weight: bold; color: #f59e0b; }
     .vote-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
-    .vote-btn { padding: 12px; background: #f3f4f6; border: 1px solid #d1d5db; border-radius: 8px; font-weight: bold; cursor: pointer; text-align: center; }
-    .vote-btn:hover { background: #e5e7eb; }
+    .vote-btn {
+      padding: 12px;
+      background: #8c532b;
+      color: #fff;
+      border: 2px solid #2d180c;
+      border-radius: 8px;
+      font-weight: bold;
+      cursor: pointer;
+      text-align: center;
+    }
+
+    /* 🌟 황금색 중앙 강조 오버레이 애니메이션 */
+    #gold-banner {
+      position: fixed;
+      top: 40%;
+      left: 50%;
+      transform: translate(-50%, -50%) scale(0);
+      background: linear-gradient(135deg, #bf953f, #fcf6ba, #b38728, #fbf5b7);
+      color: #3a2002;
+      padding: 20px 40px;
+      border-radius: 20px;
+      box-shadow: 0 0 30px rgba(255, 215, 0, 0.9), inset 0 0 10px #ffffff;
+      font-size: 2rem;
+      font-weight: 900;
+      text-align: center;
+      z-index: 9999;
+      pointer-events: none;
+      border: 4px solid #fff;
+      text-shadow: 1px 1px 2px rgba(255,255,255,0.8);
+      transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.27), opacity 0.4s;
+      opacity: 0;
+    }
+
+    #gold-banner.show {
+      transform: translate(-50%, -50%) scale(1.1);
+      opacity: 1;
+    }
   </style>
 </head>
 <body>
 
-  <!-- 입장 / 방생성 / 방참가 영역 -->
+  <!-- 황금색 턴 알림 배너 -->
+  <div id="gold-banner"></div>
+
   <div class="card" id="login-section">
-    <h3 style="margin-top:0;">🎮 라이어 게임 입장</h3>
+    <h3 style="margin-top:0; color:#f59e0b;">🪵 라이어 게임 입장</h3>
     <input type="text" id="nickname" placeholder="닉네임 입력" style="width: 100%; margin-bottom: 12px;">
     
     <div style="display: flex; gap: 8px;">
-      <button onclick="createRoom()" class="btn" style="flex: 1; background: #10b981;">방 만들기</button>
+      <button onclick="createRoom()" class="btn" style="flex: 1; background: #059669;">방 만들기</button>
     </div>
     
-    <hr style="border: 0; border-top: 1px solid #eee; margin: 15px 0;">
+    <hr style="border: 0; border-top: 1px solid #3b2314; margin: 15px 0;">
     
     <div style="display: flex; gap: 8px;">
       <input type="text" id="room-code-input" placeholder="방 코드 4자리" style="flex: 1;">
@@ -46,7 +146,6 @@
     </div>
   </div>
 
-  <!-- 대기방 영역 -->
   <div class="card" id="game-section" style="display: none;">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 12px;">
       <h3 style="margin:0;">👥 접속 플레이어</h3>
@@ -55,33 +154,30 @@
     <div id="player-list"></div>
     <br>
     <div style="display: flex; gap: 8px;">
-      <button id="start-rps-btn" onclick="startRPS()" class="btn" style="flex: 2; background: #10b981;">
-        ✌️✊🖐️ 가위바위보 순서 정하기
+      <button id="start-rps-btn" onclick="startRPS()" class="btn" style="flex: 2; background: #059669;">
+        ✌️✊🖐️ 가위바위보 시작
       </button>
       <button onclick="leaveRoom()" class="btn btn-danger" style="flex: 1;">🚪 나가기</button>
     </div>
   </div>
 
-  <!-- 가위바위보 선택 영역 -->
   <div class="card" id="rps-section" style="display: none; text-align: center;">
-    <h3 style="margin-top:0;">✌️✊🖐️ 가위, 바위, 보를 선택하세요!</h3>
+    <h3 style="margin-top:0;">✌️✊🖐️ 가위, 바위, 보!</h3>
     <div class="timer" id="timer-display">⏳ 제한시간: 25초</div>
     <div class="rps-btns">
       <button onclick="submitRPS('가위')">✌️ 가위</button>
       <button onclick="submitRPS('바위')">✊ 바위</button>
       <button onclick="submitRPS('보')">🖐️ 보</button>
     </div>
-    <p id="rps-status" style="color: #6b7280; margin-bottom: 0;"></p>
+    <p id="rps-status" style="color: #fca5a5; margin-bottom: 0;"></p>
   </div>
 
-  <!-- 라이어 지목 투표 영역 -->
   <div class="card" id="vote-section" style="display: none;">
     <h3 style="margin-top:0; text-align: center;">🕵️ 누가 라이어인가요?</h3>
     <div class="timer" id="vote-timer-display">⏳ 제한시간: 25초</div>
     <div class="vote-grid" id="vote-options"></div>
   </div>
 
-  <!-- 라이어 정답 제출 영역 -->
   <div class="card" id="guess-section" style="display: none;">
     <h3 style="margin-top:0; text-align: center;">🎯 제시어를 맞혀보세요!</h3>
     <div class="timer" id="guess-timer-display">⏳ 제한시간: 25초</div>
@@ -91,10 +187,9 @@
     </div>
   </div>
 
-  <!-- 게임 및 단어 입력 영역 -->
   <div class="card" id="play-section" style="display: none;">
     <div class="timer" id="play-timer-display">⏳ 제한시간: 25초</div>
-    <div class="turn-highlight" id="turn-info">순서를 정하는 중입니다...</div>
+    <div id="turn-info" style="text-align: center; font-weight: bold; margin-bottom: 10px; color: #fef08a;">순서를 정하는 중입니다...</div>
 
     <div id="chat-box"></div>
 
@@ -132,13 +227,11 @@
       document.getElementById('login-section').style.display = 'block';
     }
 
-    function startRPS() {
-      socket.emit('start_rps');
-    }
+    function startRPS() { socket.emit('start_rps'); }
 
     function submitRPS(choice) {
       socket.emit('submit_rps', choice);
-      document.getElementById('rps-status').innerText = `선택 완료: ${choice} (다른 플레이어 대기 중...)`;
+      document.getElementById('rps-status').innerText = `선택 완료: ${choice}`;
       document.querySelectorAll('.rps-btns button').forEach(btn => btn.disabled = true);
     }
 
@@ -153,7 +246,7 @@
     function submitVote(targetId) {
       socket.emit('submit_vote', targetId);
       document.getElementById('vote-section').style.display = 'none';
-      addMessage('system', '투표를 완료했습니다. 결과를 기다리는 중...');
+      addMessage('system', '투표를 완료했습니다.');
     }
 
     function submitAnswer() {
@@ -162,6 +255,16 @@
         socket.emit('submit_answer', input.value.trim());
         input.value = '';
       }
+    }
+
+    // 황금색 턴 시작 배너 출력 함수
+    function showGoldBanner(text) {
+      const banner = document.getElementById('gold-banner');
+      banner.innerHTML = text;
+      banner.classList.add('show');
+      setTimeout(() => {
+        banner.classList.remove('show');
+      }, 2000);
     }
 
     socket.on('connect', () => { myId = socket.id; });
@@ -206,7 +309,7 @@
 
     socket.on('rps_result', (data) => {
       document.getElementById('rps-section').style.display = 'none';
-      let resultText = `👑 <b>승자: ${data.winner.name} (${data.winner.choice})</b><br><b>[시계방향 진행 순서]</b><br>`;
+      let resultText = `👑 <b>승자: ${data.winner.name}</b><br><b>[순서]</b><br>`;
       data.order.forEach((p, idx) => { resultText += `${idx + 1}번: ${p.name}<br>`; });
       addMessage('system', resultText);
     });
@@ -216,15 +319,16 @@
       const input = document.getElementById('word-input');
       const sendBtn = document.getElementById('send-btn');
 
+      // 황금색 팝업 애니메이션 실행
+      showGoldBanner(`✨ ${data.currentPlayer} 스타트! ✨`);
+
       if (data.currentPlayerId === myId) {
-        turnDiv.innerText = `🎯 지금은 [나(${data.currentPlayer})]의 순서입니다! 단어를 입력해 주세요.`;
-        turnDiv.style.background = '#d1fae5';
+        turnDiv.innerText = `🎯 나의 순서입니다! 단어를 입력해 주세요.`;
         input.disabled = false;
         sendBtn.disabled = false;
         input.focus();
       } else {
-        turnDiv.innerText = `⏳ 현재 순서: ${data.currentPlayer} (대기 중...)`;
-        turnDiv.style.background = '#eef2ff';
+        turnDiv.innerText = `⏳ 현재 순서: ${data.currentPlayer}`;
         input.disabled = true;
         sendBtn.disabled = true;
       }
@@ -250,16 +354,16 @@
       });
 
       voteSection.style.display = 'block';
-      addMessage('system', '🗳️ 모든 인원의 단어 입력이 끝났습니다. 라이어라고 생각하는 사람을 선택해 주세요!');
+      addMessage('system', '🗳️ 라이어라고 생각하는 사람을 선택해 주세요!');
     });
 
     socket.on('liar_caught', (data) => {
       document.getElementById('vote-section').style.display = 'none';
       if (data.liarId === myId) {
         document.getElementById('guess-section').style.display = 'block';
-        addMessage('system', '🚨 당신이 라이어로 지목되었습니다! 제한시간 내에 정답 제시어를 입력하세요.');
+        addMessage('system', '🚨 제시어를 맞혀주세요!');
       } else {
-        addMessage('system', `🚨 라이어 [ ${data.liarName} ]님이 적발되었습니다! 라이어가 제시어를 입력하는 중입니다...`);
+        addMessage('system', `🚨 라이어 [ ${data.liarName} ]님이 적발되었습니다!`);
       }
     });
 
