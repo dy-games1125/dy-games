@@ -9,7 +9,7 @@
     * { box-sizing: border-box; }
     body { font-family: 'Noto Sans KR', sans-serif; padding: 20px; background-color: #f4f6f9; max-width: 500px; margin: 0 auto; color: #333; }
     .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 15px; }
-    #chat-box { height: 220px; border: 1px solid #e0e0e0; overflow-y: auto; padding: 10px; border-radius: 8px; background: #fafafa; margin-bottom: 10px; }
+    #chat-box { height: 200px; border: 1px solid #e0e0e0; overflow-y: auto; padding: 10px; border-radius: 8px; background: #fafafa; margin-bottom: 10px; }
     .msg { margin-bottom: 8px; word-break: break-all; }
     .msg.system { color: #6b7280; font-size: 0.9em; font-style: italic; }
     .msg.word { font-weight: bold; color: #1e40af; }
@@ -20,7 +20,11 @@
     input[type="text"] { padding: 10px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 0.95rem; }
     button.btn { padding: 10px; background: #4f46e5; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; }
     button.btn:disabled { background: #9ca3af; cursor: not-allowed; }
-    .code-box { background: #f3f4f6; padding: 8px 12px; border-radius: 6px; font-weight: bold; color: #4f46e5; letter-spacing: 2px; }
+    .btn-danger { background: #ef4444 !important; }
+    .code-box { background: #f3f4f6; padding: 6px 10px; border-radius: 6px; font-weight: bold; color: #4f46e5; }
+    .vote-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
+    .vote-btn { padding: 12px; background: #f3f4f6; border: 1px solid #d1d5db; border-radius: 8px; font-weight: bold; cursor: pointer; text-align: center; }
+    .vote-btn:hover { background: #e5e7eb; }
   </style>
 </head>
 <body>
@@ -46,13 +50,16 @@
   <div class="card" id="game-section" style="display: none;">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 12px;">
       <h3 style="margin:0;">👥 접속 플레이어</h3>
-      <div>방 코드: <span class="code-box" id="display-room-code">----</span></div>
+      <div>코드: <span class="code-box" id="display-room-code">----</span></div>
     </div>
     <div id="player-list"></div>
     <br>
-    <button id="start-rps-btn" onclick="startRPS()" class="btn" style="width: 100%; background: #10b981;">
-      ✌️✊🖐️ 가위바위보로 순서 정하기
-    </button>
+    <div style="display: flex; gap: 8px;">
+      <button id="start-rps-btn" onclick="startRPS()" class="btn" style="flex: 2; background: #10b981;">
+        ✌️✊🖐️ 가위바위보 순서 정하기
+      </button>
+      <button onclick="leaveRoom()" class="btn btn-danger" style="flex: 1;">🚪 나가기</button>
+    </div>
   </div>
 
   <!-- 가위바위보 선택 영역 -->
@@ -65,6 +72,23 @@
       <button onclick="submitRPS('보')">🖐️ 보</button>
     </div>
     <p id="rps-status" style="color: #6b7280; margin-bottom: 0;"></p>
+  </div>
+
+  <!-- 라이어 지목 투표 영역 -->
+  <div class="card" id="vote-section" style="display: none;">
+    <h3 style="margin-top:0; text-align: center;">🕵️ 누가 라이어인가요?</h3>
+    <div class="timer" id="vote-timer-display">⏳ 제한시간: 25초</div>
+    <div class="vote-grid" id="vote-options"></div>
+  </div>
+
+  <!-- 라이어 정답 제출 영역 -->
+  <div class="card" id="guess-section" style="display: none;">
+    <h3 style="margin-top:0; text-align: center;">🎯 제시어를 맞혀보세요!</h3>
+    <div class="timer" id="guess-timer-display">⏳ 제한시간: 25초</div>
+    <div style="display: flex; gap: 5px;">
+      <input type="text" id="guess-input" placeholder="제시어 입력" style="flex: 1;">
+      <button class="btn" onclick="submitAnswer()" style="width: 80px;">제출</button>
+    </div>
   </div>
 
   <!-- 게임 및 단어 입력 영역 -->
@@ -98,6 +122,16 @@
       socket.emit('join_room', { nickname: name, roomCode: code });
     }
 
+    function leaveRoom() {
+      socket.emit('leave_room');
+      document.getElementById('game-section').style.display = 'none';
+      document.getElementById('play-section').style.display = 'none';
+      document.getElementById('rps-section').style.display = 'none';
+      document.getElementById('vote-section').style.display = 'none';
+      document.getElementById('guess-section').style.display = 'none';
+      document.getElementById('login-section').style.display = 'block';
+    }
+
     function startRPS() {
       socket.emit('start_rps');
     }
@@ -112,6 +146,20 @@
       const input = document.getElementById('word-input');
       if (input.value.trim() !== '') {
         socket.emit('send_word', input.value.trim());
+        input.value = '';
+      }
+    }
+
+    function submitVote(targetId) {
+      socket.emit('submit_vote', targetId);
+      document.getElementById('vote-section').style.display = 'none';
+      addMessage('system', '투표를 완료했습니다. 결과를 기다리는 중...');
+    }
+
+    function submitAnswer() {
+      const input = document.getElementById('guess-input');
+      if (input.value.trim() !== '') {
+        socket.emit('submit_answer', input.value.trim());
         input.value = '';
       }
     }
@@ -143,10 +191,14 @@
     socket.on('timer_tick', (timeLeft) => {
       document.getElementById('timer-display').innerText = `⏳ 제한시간: ${timeLeft}초`;
       document.getElementById('play-timer-display').innerText = `⏳ 제한시간: ${timeLeft}초`;
+      document.getElementById('vote-timer-display').innerText = `⏳ 제한시간: ${timeLeft}초`;
+      document.getElementById('guess-timer-display').innerText = `⏳ 제한시간: ${timeLeft}초`;
     });
 
     socket.on('rps_started', (msg) => {
       document.getElementById('rps-section').style.display = 'block';
+      document.getElementById('vote-section').style.display = 'none';
+      document.getElementById('guess-section').style.display = 'none';
       document.getElementById('rps-status').innerText = '';
       document.querySelectorAll('.rps-btns button').forEach(btn => btn.disabled = false);
       addMessage('system', msg);
@@ -180,6 +232,45 @@
 
     socket.on('receive_word', (data) => {
       addMessage('word', `${data.sender}: ${data.word}`);
+    });
+
+    socket.on('start_voting', (data) => {
+      const voteSection = document.getElementById('vote-section');
+      const voteOptions = document.getElementById('vote-options');
+      voteOptions.innerHTML = '';
+
+      data.players.forEach(p => {
+        if (p.id !== myId) {
+          const btn = document.createElement('button');
+          btn.className = 'vote-btn';
+          btn.innerText = p.name;
+          btn.onclick = () => submitVote(p.id);
+          voteOptions.appendChild(btn);
+        }
+      });
+
+      voteSection.style.display = 'block';
+      addMessage('system', '🗳️ 모든 인원의 단어 입력이 끝났습니다. 라이어라고 생각하는 사람을 선택해 주세요!');
+    });
+
+    socket.on('liar_caught', (data) => {
+      document.getElementById('vote-section').style.display = 'none';
+      if (data.liarId === myId) {
+        document.getElementById('guess-section').style.display = 'block';
+        addMessage('system', '🚨 당신이 라이어로 지목되었습니다! 제한시간 내에 정답 제시어를 입력하세요.');
+      } else {
+        addMessage('system', `🚨 라이어 [ ${data.liarName} ]님이 적발되었습니다! 라이어가 제시어를 입력하는 중입니다...`);
+      }
+    });
+
+    socket.on('game_over', (data) => {
+      document.getElementById('guess-section').style.display = 'none';
+      document.getElementById('vote-section').style.display = 'none';
+      addMessage('system', `<b>[게임 종료]</b> ${data.message}`);
+    });
+
+    socket.on('reset_to_waiting', () => {
+      document.getElementById('start-rps-btn').disabled = false;
     });
 
     function addMessage(type, text) {
