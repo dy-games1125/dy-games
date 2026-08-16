@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>온라인 라이어 게임</title>
+  <style>
+    body { font-family: sans-serif; background: #f0f2f5; margin: 0; padding: 20px; text-align: center; }
+    .card { background: white; padding: 20px; border-radius: 12px; max-width: 400px; margin: 0 auto; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+    .hidden { display: none; }
+    input { width: 80%; padding: 10px; margin: 5px 0; font-size: 16px; }
+    button { padding: 10px 20px; font-size: 16px; background: #3498db; color: white; border: none; border-radius: 6px; cursor: pointer; margin: 5px; }
+    .word-box { background: #fff3cd; padding: 15px; margin: 15px 0; border-radius: 8px; font-weight: bold; font-size: 20px; }
+    ul { list-style: none; padding: 0; }
+    li { padding: 8px; background: #f8f9fa; margin: 4px 0; border-radius: 4px; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>🕵️ 라이어 게임</h1>
+
+    <div id="screen-login">
+      <input type="text" id="input-nickname" placeholder="닉네임 입력" maxlength="8"><br>
+      <button onclick="createRoom()">방 만들기</button>
+      <hr>
+      <input type="text" id="input-roomcode" placeholder="방 코드 4자리" maxlength="4"><br>
+      <button onclick="joinRoom()">방 입장하기</button>
+    </div>
+
+    <div id="screen-game" class="hidden">
+      <h3>방 코드: <span id="display-roomcode">----</span></h3>
+      <p id="display-role">역할 대기 중...</p>
+      <div id="word-box" class="word-box hidden">제시어: <span id="display-word">???</span></div>
+
+      <h4>참여자 목록 (<span id="player-count">0</span>/8)</h4>
+      <ul id="player-list"></ul>
+
+      <button id="btn-start" class="hidden" onclick="startGame()">게임 시작 (방장전용)</button>
+    </div>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    const socket = io();
+    let myId = null;
+
+    function createRoom() {
+      const nickname = document.getElementById('input-nickname').value.trim();
+      socket.emit('createRoom', nickname);
+    }
+
+    function joinRoom() {
+      const nickname = document.getElementById('input-nickname').value.trim();
+      const roomCode = document.getElementById('input-roomcode').value.trim();
+      if (!roomCode) return alert('방 코드를 입력하세요.');
+      socket.emit('joinRoom', { nickname, roomCode });
+    }
+
+    function startGame() {
+      socket.emit('startGame');
+    }
+
+    socket.on('roomCreated', ({ roomCode, playerId }) => {
+      myId = playerId;
+      showGameScreen(roomCode);
+    });
+
+    socket.on('roomJoined', ({ roomCode, playerId }) => {
+      myId = playerId;
+      showGameScreen(roomCode);
+    });
+
+    socket.on('errorMsg', (msg) => alert(msg));
+
+    socket.on('updateRoom', (room) => {
+      document.getElementById('player-count').innerText = Object.keys(room.players).length;
+      const listEl = document.getElementById('player-list');
+      listEl.innerHTML = '';
+
+      Object.values(room.players).forEach(p => {
+        const li = document.createElement('li');
+        li.innerText = `${p.nickname} ${p.id === room.hostId ? '👑(방장)' : ''}`;
+        listEl.appendChild(li);
+      });
+
+      const btnStart = document.getElementById('btn-start');
+      if (room.hostId === myId && room.state === 'LOBBY') {
+        btnStart.classList.remove('hidden');
+      } else {
+        btnStart.classList.add('hidden');
+      }
+    });
+
+    socket.on('gameStarted', ({ isLiar, word }) => {
+      document.getElementById('word-box').classList.remove('hidden');
+      const roleEl = document.getElementById('display-role');
+      const wordEl = document.getElementById('display-word');
+
+      if (isLiar) {
+        roleEl.innerText = '👺 당신은 라이어입니다!';
+        wordEl.innerText = '정체를 숨기세요!';
+      } else {
+        roleEl.innerText = '👨‍🌾 당신은 시민입니다.';
+        wordEl.innerText = word;
+      }
+    });
+
+    function showGameScreen(roomCode) {
+      document.getElementById('screen-login').classList.add('hidden');
+      document.getElementById('screen-game').classList.remove('hidden');
+      document.getElementById('display-roomcode').innerText = roomCode;
+    }
+  </script>
+</body>
+</html>
