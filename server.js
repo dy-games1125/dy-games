@@ -9,7 +9,7 @@ const io = new Server(server);
 app.use(express.static('public'));
 
 const rooms = {};
-const MAX_PLAYERS = 8; // 최대 인원 제한 설정
+const MAX_PLAYERS = 8;
 
 const WORD_LIST = [
   '사과', '바나나', '피자', '치킨', '삼겹살', '떡볶이', '마라탕', '초밥', '햄버거', '파스타',
@@ -43,7 +43,7 @@ io.on('connection', (socket) => {
     rooms[roomCode] = {
       code: roomCode,
       players: [{ id: socket.id, name: name, choice: null, isLiar: false, votes: 0 }],
-      rpsCandidates: [], // 가위바위보 재경기 대상자 관리
+      rpsCandidates: [],
       playOrder: [],
       gameState: 'WAITING',
       currentTurnIndex: 0,
@@ -61,7 +61,7 @@ io.on('connection', (socket) => {
     io.to(roomCode).emit('system_message', `${name}님이 방을 생성하셨습니다.`);
   });
 
-  // 방 입장 (최대 8명 제약 적용)
+  // 방 입장
   socket.on('join_room', (data) => {
     const { roomCode, nickname } = data;
     const targetCode = roomCode.trim().toUpperCase();
@@ -105,12 +105,11 @@ io.on('connection', (socket) => {
       return;
     }
 
-    // 전체 인원으로 가위바위보 시작
     room.rpsCandidates = [...room.players];
     startRpsRound(roomCode);
   });
 
-  // 가위바위보 선택 수신
+  // 가위바위보 선택
   socket.on('submit_rps', (choice) => {
     const roomCode = socket.roomCode;
     if (!roomCode || !rooms[roomCode]) return;
@@ -122,7 +121,6 @@ io.on('connection', (socket) => {
       io.to(roomCode).emit('system_message', `${player.name}님이 선택을 완료했습니다.`);
     }
 
-    // 현재 라운드 참여 대상자가 모두 선택했는지 확인
     if (room.rpsCandidates.every(p => p.choice !== null)) {
       clearTimeout(room.turnTimer);
       determineClockwiseOrder(roomCode);
@@ -201,7 +199,6 @@ io.on('connection', (socket) => {
     resetGame(roomCode);
   });
 
-  // 퇴장 처리
   socket.on('leave_room', () => { handleLeave(socket); });
   socket.on('disconnect', () => { handleLeave(socket); });
 });
@@ -225,7 +222,6 @@ function startRpsRound(roomCode) {
   });
 }
 
-// 실제 가위바위보 로직 (최대 8명 인원 고려)
 function determineClockwiseOrder(roomCode) {
   const room = rooms[roomCode];
   if (!room) return;
@@ -233,14 +229,12 @@ function determineClockwiseOrder(roomCode) {
   const choices = room.rpsCandidates.map(p => p.choice);
   const uniqueChoices = Array.from(new Set(choices));
 
-  // 1. 모두 동일한 것을 냈거나(1가지), 가위·바위·보가 모두 등장한 경우(3가지) -> 현재 대상자 전원 재경기
   if (uniqueChoices.length === 1 || uniqueChoices.length === 3) {
     io.to(roomCode).emit('system_message', '🤝 무승부입니다! 다시 진행합니다.');
     startRpsRound(roomCode);
     return;
   }
 
-  // 2. 선택지가 2가지만 남은 경우 (가위&보, 바위&가위, 보&바위) -> 승자 판단
   let winningChoice = '';
   if (uniqueChoices.includes('가위') && uniqueChoices.includes('보')) {
     winningChoice = '가위';
@@ -250,28 +244,23 @@ function determineClockwiseOrder(roomCode) {
     winningChoice = '보';
   }
 
-  // 이번 라운드 승자 그룹 선출
   const winners = room.rpsCandidates.filter(p => p.choice === winningChoice);
 
-  // 승자가 2명 이상인 경우 -> 승자 그룹끼리만 결승 재경기 진행
   if (winners.length > 1) {
-    room.rpsCandidates = winners; // 승자들로 대상자 축소
-    io.to(roomCode).emit('system_message', `🤝 [ ${winners.map(w => w.name).join(', ')} ]님이 이겼습니다! 최종 1등을 가리기 위해 승자끼리 재경기합니다.`);
+    room.rpsCandidates = winners;
+    io.to(roomCode).emit('system_message', `🤝 [ ${winners.map(w => w.name).join(', ')} ]님이 이겼습니다! 최종 1등을 가리기 위해 재경기합니다.`);
     startRpsRound(roomCode);
     return;
   }
 
-  // 단 1명의 최종 승자가 결정된 경우
   const winner = winners[0];
   const winnerIndex = room.players.findIndex(p => p.id === winner.id);
 
-  // 승자 기준으로 시계방향 순서 정렬
   room.playOrder = [
     ...room.players.slice(winnerIndex),
     ...room.players.slice(0, winnerIndex)
   ];
 
-  // 제시어 선택 및 라이어 지정
   room.currentWord = WORD_LIST[Math.floor(Math.random() * WORD_LIST.length)];
   const liarIndex = Math.floor(Math.random() * room.playOrder.length);
 
@@ -404,7 +393,6 @@ function startVotePhase(roomCode) {
   });
 }
 
-// 동점표 스킵 및 라이어 순서 지정 반영
 function processVoteResult(roomCode) {
   const room = rooms[roomCode];
   if (!room) return;
@@ -416,12 +404,11 @@ function processVoteResult(roomCode) {
 
   const topVotedPlayers = room.players.filter(p => p.votes === maxVotes);
 
-  // 최다 득표 동수(동점표) 시 투표 무효 및 단어 제출 라운드 재진행
+  // 동점표 발생 시: 순서를 무셋하지 않고 자연스럽게 다음 턴 진행
   if (topVotedPlayers.length > 1) {
-    io.to(roomCode).emit('system_message', '⚖️ 동점표가 발생하여 이번 투표는 무효 처리됩니다! 다시 단어를 제시합니다.');
-    room.currentTurnIndex = 0;
+    io.to(roomCode).emit('system_message', '⚖️ 동점표가 발생하여 이번 투표는 무효 처리됩니다! 계속해서 단어를 제시합니다.');
     room.gameState = 'PLAYING';
-    broadcastTurn(roomCode);
+    nextTurn(roomCode);
     return;
   }
 
@@ -432,7 +419,7 @@ function processVoteResult(roomCode) {
     room.gameState = 'GUESSING';
     room.suspectLiarId = mostVotedPlayer.id;
 
-    // 순서를 지목된 라이어로 지정
+    // 라이어가 걸렸을 때만 순서를 라이어로 설정
     io.to(roomCode).emit('turn_update', {
       currentPlayer: mostVotedPlayer.name,
       currentPlayerId: mostVotedPlayer.id
@@ -451,10 +438,9 @@ function processVoteResult(roomCode) {
       resetGame(roomCode);
     });
   } else {
-    io.to(roomCode).emit('system_message', `❌ [ ${mostVotedPlayer.name} ]님은 라이어가 아닙니다! 다시 게임을 진행합니다.`);
-    room.currentTurnIndex = 0;
+    io.to(roomCode).emit('system_message', `❌ [ ${mostVotedPlayer.name} ]님은 라이어가 아닙니다! 계속해서 단어를 제시합니다.`);
     room.gameState = 'PLAYING';
-    broadcastTurn(roomCode);
+    nextTurn(roomCode); // 시민이 지목된 경우 순서 리셋 없이 다음 턴 진행
   }
 }
 
