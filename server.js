@@ -16,17 +16,7 @@ const WORD_LIST = [
   '돈까스', '짜장면', '짬뽕', '탕수육', '족발', '보쌈', '곱창', '냉면', '칼국수', '김밥',
   '라면', '순대', '계란말이', '감자탕', '부대찌개', '김치찌개', '된장찌개', '비빔밥', '갈비탕', '설렁탕',
   '아이스크림', '케이크', '마카롱', '빙수', '에그타르트', '붕어빵', '호떡', '츄러스', '와플', '소금빵',
-  '아메리카노', '버블티', '스무디', '콜라', '사이다', '식혜', '생수', '우유', '요거트', '계란후라이',
-  '호랑이', '사자', '코끼리', '기린', '하마', '악어', '펭귄', '판다', '강아지', '고양이',
-  '토끼', '햄스터', '다람쥐', '늑대', '여우', '곰', '독수리', '참새', '비둘기', '부엉이',
-  '고래', '상어', '돌고래', '오징어', '문어', '거북이', '카멜레온', '장미', '해바라기', '선인장',
-  '영화관', '놀이공원', '학교', '병원', '경찰서', '소방서', '도서관', '박물관', '미술관', '공항',
-  '지하철역', '편의점', '대형마트', '백화점', '카페', '피씨방', '코인노래방', '워터파크', '해수욕장', '캠핑장',
-  '스마트폰', '노트북', '태블릿', '냉장고', '세탁기', '에어컨', '선풍기', '청소기', '드라이기', '전자레인지',
-  '에어프라이어', '티비', '스피커', '이어폰', '안경', '시계', '우산', '지갑', '거울', '빗',
-  '축구', '농구', '야구', '배구', '테니스', '배드민턴', '탁구', '볼링', '골프', '수영',
-  '의사', '경찰관', '소방관', '교사', '요리사', '판사', '변호사', '비행기조종사', '승무원', '프로그래머',
-  '아이돌', '배우', '개그맨', '유튜버', '웹툰작가', '운동선수', '건축가', '화가', '미용사', '군인'
+  '아메리카노', '버블티', '스무디', '콜라', '사이다', '식혜', '생수', '우유', '요거트', '계란후라이'
 ];
 
 function generateRoomCode() {
@@ -94,12 +84,18 @@ io.on('connection', (socket) => {
     io.to(targetCode).emit('system_message', `${name}님이 입장하셨습니다.`);
   });
 
-  // 가위바위보 시작
+  // 가위바위보 시작 (게임 진행 중 재요청 방지)
   socket.on('start_rps', () => {
     const roomCode = socket.roomCode;
     if (!roomCode || !rooms[roomCode]) return;
 
     const room = rooms[roomCode];
+
+    if (room.gameState !== 'WAITING') {
+      socket.emit('system_message', '⚠️ 이미 게임이 진행 중입니다!');
+      return;
+    }
+
     if (room.players.length < 2) {
       socket.emit('system_message', '최소 2명 이상이 모여야 시작할 수 있습니다.');
       return;
@@ -115,6 +111,8 @@ io.on('connection', (socket) => {
     if (!roomCode || !rooms[roomCode]) return;
 
     const room = rooms[roomCode];
+    if (room.gameState !== 'RPS') return;
+
     const player = room.rpsCandidates.find(p => p.id === socket.id);
     if (player) {
       player.choice = choice;
@@ -151,7 +149,7 @@ io.on('connection', (socket) => {
     nextTurn(roomCode);
   });
 
-  // 투표 하기
+  // 투표 제출
   socket.on('submit_vote', (targetId) => {
     const roomCode = socket.roomCode;
     if (!roomCode || !rooms[roomCode]) return;
@@ -404,11 +402,14 @@ function processVoteResult(roomCode) {
 
   const topVotedPlayers = room.players.filter(p => p.votes === maxVotes);
 
-  // 동점표 발생 시: 순서를 무셋하지 않고 자연스럽게 다음 턴 진행
+  // ★ 동점표 발생 시 대화창(PLAYING)으로 전환
   if (topVotedPlayers.length > 1) {
-    io.to(roomCode).emit('system_message', '⚖️ 동점표가 발생하여 이번 투표는 무효 처리됩니다! 계속해서 단어를 제시합니다.');
+    io.to(roomCode).emit('system_message', '⚖️ 동점표가 발생했습니다! 지목에 실패하여 다시 대화를 진행합니다.');
+    
     room.gameState = 'PLAYING';
-    nextTurn(roomCode);
+    room.currentTurnIndex = 0; // 1번 순서부터 다시 시작
+    
+    broadcastTurn(roomCode);
     return;
   }
 
@@ -419,7 +420,6 @@ function processVoteResult(roomCode) {
     room.gameState = 'GUESSING';
     room.suspectLiarId = mostVotedPlayer.id;
 
-    // 라이어가 걸렸을 때만 순서를 라이어로 설정
     io.to(roomCode).emit('turn_update', {
       currentPlayer: mostVotedPlayer.name,
       currentPlayerId: mostVotedPlayer.id
@@ -438,9 +438,9 @@ function processVoteResult(roomCode) {
       resetGame(roomCode);
     });
   } else {
-    io.to(roomCode).emit('system_message', `❌ [ ${mostVotedPlayer.name} ]님은 라이어가 아닙니다! 계속해서 단어를 제시합니다.`);
+    io.to(roomCode).emit('system_message', `❌ [ ${mostVotedPlayer.name} ]님은 라이어가 아닙니다! 계속해서 대화를 진행합니다.`);
     room.gameState = 'PLAYING';
-    nextTurn(roomCode); // 시민이 지목된 경우 순서 리셋 없이 다음 턴 진행
+    nextTurn(roomCode);
   }
 }
 
