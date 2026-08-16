@@ -2,113 +2,171 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <title>온라인 라이어 게임</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>라이어 게임</title>
+  <script src="/socket.io/socket.io.js"></script>
   <style>
-    body { font-family: sans-serif; background: #f0f2f5; margin: 0; padding: 20px; text-align: center; }
-    .card { background: white; padding: 20px; border-radius: 12px; max-width: 400px; margin: 0 auto; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-    .hidden { display: none; }
-    input { width: 80%; padding: 10px; margin: 5px 0; font-size: 16px; }
-    button { padding: 10px 20px; font-size: 16px; background: #3498db; color: white; border: none; border-radius: 6px; cursor: pointer; margin: 5px; }
-    .word-box { background: #fff3cd; padding: 15px; margin: 15px 0; border-radius: 8px; font-weight: bold; font-size: 20px; }
-    ul { list-style: none; padding: 0; }
-    li { padding: 8px; background: #f8f9fa; margin: 4px 0; border-radius: 4px; }
+    * { box-sizing: border-box; }
+    body { font-family: 'Noto Sans KR', sans-serif; padding: 20px; background-color: #f4f6f9; max-width: 500px; margin: 0 auto; color: #333; }
+    .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 15px; }
+    #chat-box { height: 220px; border: 1px solid #e0e0e0; overflow-y: auto; padding: 10px; border-radius: 8px; background: #fafafa; margin-bottom: 10px; }
+    .msg { margin-bottom: 8px; word-break: break-all; }
+    .msg.system { color: #6b7280; font-size: 0.9em; font-style: italic; }
+    .msg.word { font-weight: bold; color: #1e40af; }
+    
+    /* 가위바위보 버튼 스타일 */
+    .rps-btns { display: flex; justify-content: center; gap: 10px; margin: 15px 0; }
+    .rps-btns button { font-size: 1.2rem; padding: 12px 20px; cursor: pointer; border-radius: 8px; border: 1px solid #d1d5db; background: #ffffff; transition: all 0.2s; font-weight: bold; }
+    .rps-btns button:hover { background: #f3f4f6; border-color: #9ca3af; }
+    .rps-btns button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .turn-highlight { background: #eef2ff; border: 2px solid #6366f1; padding: 10px; border-radius: 8px; font-weight: bold; text-align: center; margin-bottom: 10px; }
+    .timer { font-size: 1.1rem; color: #dc2626; font-weight: bold; text-align: center; margin-bottom: 8px; }
+    
+    input[type="text"] { width: calc(100% - 90px); padding: 10px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 0.95rem; }
+    button.send-btn { width: 80px; padding: 10px; background: #4f46e5; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; }
+    button.send-btn:disabled { background: #9ca3af; cursor: not-allowed; }
   </style>
 </head>
 <body>
-  <div class="card">
-    <h1>🕵️ 라이어 게임</h1>
 
-    <div id="screen-login">
-      <input type="text" id="input-nickname" placeholder="닉네임 입력" maxlength="8"><br>
-      <button onclick="createRoom()">방 만들기</button>
-      <hr>
-      <input type="text" id="input-roomcode" placeholder="방 코드 4자리" maxlength="4"><br>
-      <button onclick="joinRoom()">방 입장하기</button>
+  <!-- 입장 영역 -->
+  <div class="card" id="login-section">
+    <h3 style="margin-top:0;">🎮 라이어 게임 입장</h3>
+    <input type="text" id="nickname" placeholder="닉네임 입력" style="width: 70%;">
+    <button onclick="joinGame()" class="send-btn" style="width: 25%;">입장</button>
+  </div>
+
+  <!-- 대기방 영역 -->
+  <div class="card" id="game-section" style="display: none;">
+    <h3 style="margin-top:0;">👥 현재 접속 플레이어</h3>
+    <div id="player-list"></div>
+    <br>
+    <button id="start-rps-btn" onclick="startRPS()" style="width: 100%; padding: 12px; background: #10b981; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer;">
+      ✌️✊🖐️ 가위바위보로 순서 정하기
+    </button>
+  </div>
+
+  <!-- 가위바위보 선택 영역 -->
+  <div class="card" id="rps-section" style="display: none; text-align: center;">
+    <h3 style="margin-top:0;">✌️✊🖐️ 가위, 바위, 보를 선택하세요!</h3>
+    <div class="timer" id="timer-display">⏳ 제한시간: 25초</div>
+    <div class="rps-btns">
+      <button onclick="submitRPS('가위')">✌️ 가위</button>
+      <button onclick="submitRPS('바위')">✊ 바위</button>
+      <button onclick="submitRPS('보')">🖐️ 보</button>
     </div>
+    <p id="rps-status" style="color: #6b7280; margin-bottom: 0;"></p>
+  </div>
 
-    <div id="screen-game" class="hidden">
-      <h3>방 코드: <span id="display-roomcode">----</span></h3>
-      <p id="display-role">역할 대기 중...</p>
-      <div id="word-box" class="word-box hidden">제시어: <span id="display-word">???</span></div>
+  <!-- 게임 및 단어 입력 영역 -->
+  <div class="card" id="play-section" style="display: none;">
+    <div class="timer" id="play-timer-display">⏳ 제한시간: 25초</div>
+    <div class="turn-highlight" id="turn-info">순서를 정하는 중입니다...</div>
 
-      <h4>참여자 목록 (<span id="player-count">0</span>/8)</h4>
-      <ul id="player-list"></ul>
+    <div id="chat-box"></div>
 
-      <button id="btn-start" class="hidden" onclick="startGame()">게임 시작 (방장전용)</button>
+    <div style="display: flex; gap: 5px;">
+      <input type="text" id="word-input" placeholder="채팅창에는 단어를 입력해주세요" disabled onkeyup="if(event.keyCode===13) sendWord()">
+      <button class="send-btn" id="send-btn" onclick="sendWord()" disabled>전송</button>
     </div>
   </div>
 
-  <script src="/socket.io/socket.io.js"></script>
   <script>
     const socket = io();
-    let myId = null;
+    let myId = '';
 
-    function createRoom() {
-      const nickname = document.getElementById('input-nickname').value.trim();
-      socket.emit('createRoom', nickname);
+    function joinGame() {
+      const name = document.getElementById('nickname').value;
+      if (!name.trim()) return alert('닉네임을 입력해 주세요.');
+      
+      socket.emit('join_game', name);
+      document.getElementById('login-section').style.display = 'none';
+      document.getElementById('game-section').style.display = 'block';
+      document.getElementById('play-section').style.display = 'block';
     }
 
-    function joinRoom() {
-      const nickname = document.getElementById('input-nickname').value.trim();
-      const roomCode = document.getElementById('input-roomcode').value.trim();
-      if (!roomCode) return alert('방 코드를 입력하세요.');
-      socket.emit('joinRoom', { nickname, roomCode });
+    function startRPS() {
+      socket.emit('start_rps');
     }
 
-    function startGame() {
-      socket.emit('startGame');
+    function submitRPS(choice) {
+      socket.emit('submit_rps', choice);
+      document.getElementById('rps-status').innerText = `선택 완료: ${choice} (다른 플레이어 대기 중...)`;
+      document.querySelectorAll('.rps-btns button').forEach(btn => btn.disabled = true);
     }
 
-    socket.on('roomCreated', ({ roomCode, playerId }) => {
-      myId = playerId;
-      showGameScreen(roomCode);
+    function sendWord() {
+      const input = document.getElementById('word-input');
+      if (input.value.trim() !== '') {
+        socket.emit('send_word', input.value.trim());
+        input.value = '';
+      }
+    }
+
+    socket.on('connect', () => { myId = socket.id; });
+
+    socket.on('system_message', (msg) => { addMessage('system', `[안내] ${msg}`); });
+
+    socket.on('player_list_update', (players) => {
+      document.getElementById('player-list').innerHTML = players.map(p => `• ${p.name}`).join('<br>');
     });
 
-    socket.on('roomJoined', ({ roomCode, playerId }) => {
-      myId = playerId;
-      showGameScreen(roomCode);
+    socket.on('timer_tick', (timeLeft) => {
+      document.getElementById('timer-display').innerText = `⏳ 제한시간: ${timeLeft}초`;
+      document.getElementById('play-timer-display').innerText = `⏳ 제한시간: ${timeLeft}초`;
     });
 
-    socket.on('errorMsg', (msg) => alert(msg));
+    socket.on('rps_started', (msg) => {
+      document.getElementById('rps-section').style.display = 'block';
+      document.getElementById('rps-status').innerText = '';
+      document.querySelectorAll('.rps-btns button').forEach(btn => btn.disabled = false);
+      addMessage('system', msg);
+    });
 
-    socket.on('updateRoom', (room) => {
-      document.getElementById('player-count').innerText = Object.keys(room.players).length;
-      const listEl = document.getElementById('player-list');
-      listEl.innerHTML = '';
+    socket.on('rps_result', (data) => {
+      document.getElementById('rps-section').style.display = 'none';
+      let resultText = `👑 <b>승자: ${data.winner.name} (${data.winner.choice})</b><br><b>[시계방향 진행 순서]</b><br>`;
+      data.order.forEach((p, idx) => { resultText += `${idx + 1}번: ${p.name}<br>`; });
+      addMessage('system', resultText);
+    });
 
-      Object.values(room.players).forEach(p => {
-        const li = document.createElement('li');
-        li.innerText = `${p.nickname} ${p.id === room.hostId ? '👑(방장)' : ''}`;
-        listEl.appendChild(li);
-      });
+    socket.on('turn_update', (data) => {
+      const turnDiv = document.getElementById('turn-info');
+      const input = document.getElementById('word-input');
+      const sendBtn = document.getElementById('send-btn');
 
-      const btnStart = document.getElementById('btn-start');
-      if (room.hostId === myId && room.state === 'LOBBY') {
-        btnStart.classList.remove('hidden');
+      if (data.currentPlayerId === myId) {
+        turnDiv.innerText = `🎯 지금은 [나(${data.currentPlayer})]의 순서입니다! 단어를 입력해 주세요.`;
+        turnDiv.style.background = '#d1fae5';
+        turnDiv.style.borderColor = '#10b981';
+        input.disabled = false;
+        sendBtn.disabled = false;
+        input.focus();
       } else {
-        btnStart.classList.add('hidden');
+        turnDiv.innerText = `⏳ 현재 순서: ${data.currentPlayer} (대기 중...)`;
+        turnDiv.style.background = '#eef2ff';
+        turnDiv.style.borderColor = '#6366f1';
+        input.disabled = true;
+        sendBtn.disabled = true;
       }
     });
 
-    socket.on('gameStarted', ({ isLiar, word }) => {
-      document.getElementById('word-box').classList.remove('hidden');
-      const roleEl = document.getElementById('display-role');
-      const wordEl = document.getElementById('display-word');
-
-      if (isLiar) {
-        roleEl.innerText = '👺 당신은 라이어입니다!';
-        wordEl.innerText = '정체를 숨기세요!';
-      } else {
-        roleEl.innerText = '👨‍🌾 당신은 시민입니다.';
-        wordEl.innerText = word;
-      }
+    socket.on('receive_word', (data) => {
+      addMessage('word', `${data.sender}: ${data.word}`);
     });
 
-    function showGameScreen(roomCode) {
-      document.getElementById('screen-login').classList.add('hidden');
-      document.getElementById('screen-game').classList.remove('hidden');
-      document.getElementById('display-roomcode').innerText = roomCode;
+    function addMessage(type, text) {
+      const chatBox = document.getElementById('chat-box');
+      const div = document.createElement('div');
+      div.className = `msg ${type}`;
+      div.innerHTML = text;
+      chatBox.appendChild(div);
+      chatBox.scrollTop = chatBox.scrollHeight;
+    }
+  </script>
+</body>
+</html>
     }
   </script>
 </body>
