@@ -8,7 +8,6 @@
   <style>
     * { box-sizing: border-box; }
     
-    /* ★ 나무 이미지 배경 적용 (public/images.jpg 경로) */
     body {
       background: url('images.jpg') no-repeat center center fixed;
       background-size: cover;
@@ -19,7 +18,6 @@
       color: #fff8e7;
     }
 
-    /* 목재 카드 테두리 감성 유지 */
     .card {
       background: rgba(60, 35, 18, 0.88);
       border: 4px solid #2d180c;
@@ -95,7 +93,6 @@
       text-align: center;
     }
 
-    /* 황금색 중앙 강조 오버레이 */
     #gold-banner {
       position: fixed;
       top: 40%;
@@ -295,7 +292,7 @@
     });
 
     socket.on('rps_started', (msg) => {
-      document.getElementById('start-rps-btn').disabled = true; // 게임 시작 후 시작 버튼 비활성화
+      document.getElementById('start-rps-btn').disabled = true;
       document.getElementById('rps-section').style.display = 'block';
       document.getElementById('vote-section').style.display = 'none';
       document.getElementById('guess-section').style.display = 'none';
@@ -315,6 +312,9 @@
       const turnDiv = document.getElementById('turn-info');
       const input = document.getElementById('word-input');
       const sendBtn = document.getElementById('send-btn');
+
+      // 동점 후 복귀 시에도 투표 창 숨기기 처리
+      document.getElementById('vote-section').style.display = 'none';
 
       showGoldBanner(`✨ ${data.currentPlayer} 스타트! ✨`);
 
@@ -370,7 +370,7 @@
     });
 
     socket.on('reset_to_waiting', () => {
-      document.getElementById('start-rps-btn').disabled = false; // 게임 완전히 종료 시만 버튼 다시 활성화
+      document.getElementById('start-rps-btn').disabled = false;
     });
 
     function addMessage(type, text) {
