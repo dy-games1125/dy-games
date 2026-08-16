@@ -8,13 +8,10 @@
   <style>
     * { box-sizing: border-box; }
     
-    /* 나무 판자 배경 스타일 */
+    /* ★ 나무 이미지 배경 적용 (public/images.jpg 경로) */
     body {
-      background-color: #3b2314;
-      background-image: 
-        linear-gradient(90deg, rgba(255,255,255,.03) 50%, transparent 50%),
-        linear-gradient(rgba(0,0,0,.3) 50%, transparent 50%);
-      background-size: 80px 80px, 4px 4px;
+      background: url('images.jpg') no-repeat center center fixed;
+      background-size: cover;
       font-family: 'Malgun Gothic', sans-serif;
       padding: 20px;
       max-width: 550px;
@@ -22,14 +19,15 @@
       color: #fff8e7;
     }
 
-    /* 목재 카드 스타일 */
+    /* 목재 카드 테두리 감성 유지 */
     .card {
-      background: #5c3a21;
+      background: rgba(60, 35, 18, 0.88);
       border: 4px solid #2d180c;
-      box-shadow: inset 0 0 10px rgba(0,0,0,0.8), 0 8px 16px rgba(0,0,0,0.6);
+      box-shadow: inset 0 0 10px rgba(0,0,0,0.8), 0 8px 16px rgba(0,0,0,0.7);
       border-radius: 12px;
       padding: 20px;
       margin-bottom: 15px;
+      backdrop-filter: blur(2px);
     }
 
     #chat-box {
@@ -38,7 +36,7 @@
       overflow-y: auto;
       padding: 10px;
       border-radius: 8px;
-      background: #2a160a;
+      background: rgba(20, 10, 5, 0.85);
       margin-bottom: 10px;
     }
 
@@ -81,7 +79,7 @@
     }
 
     button.btn:hover { background: #a66334; }
-    button.btn:disabled { background: #523b2b; cursor: not-allowed; }
+    button.btn:disabled { background: #523b2b; cursor: not-allowed; opacity: 0.6; }
     .btn-danger { background: #dc2626 !important; }
 
     .code-box { background: #2a160a; padding: 6px 10px; border-radius: 6px; font-weight: bold; color: #f59e0b; }
@@ -97,7 +95,7 @@
       text-align: center;
     }
 
-    /* 🌟 황금색 중앙 강조 오버레이 애니메이션 */
+    /* 황금색 중앙 강조 오버레이 */
     #gold-banner {
       position: fixed;
       top: 40%;
@@ -127,7 +125,6 @@
 </head>
 <body>
 
-  <!-- 황금색 턴 알림 배너 -->
   <div id="gold-banner"></div>
 
   <div class="card" id="login-section">
@@ -257,7 +254,6 @@
       }
     }
 
-    // 황금색 턴 시작 배너 출력 함수
     function showGoldBanner(text) {
       const banner = document.getElementById('gold-banner');
       banner.innerHTML = text;
@@ -299,6 +295,7 @@
     });
 
     socket.on('rps_started', (msg) => {
+      document.getElementById('start-rps-btn').disabled = true; // 게임 시작 후 시작 버튼 비활성화
       document.getElementById('rps-section').style.display = 'block';
       document.getElementById('vote-section').style.display = 'none';
       document.getElementById('guess-section').style.display = 'none';
@@ -319,7 +316,6 @@
       const input = document.getElementById('word-input');
       const sendBtn = document.getElementById('send-btn');
 
-      // 황금색 팝업 애니메이션 실행
       showGoldBanner(`✨ ${data.currentPlayer} 스타트! ✨`);
 
       if (data.currentPlayerId === myId) {
@@ -374,7 +370,7 @@
     });
 
     socket.on('reset_to_waiting', () => {
-      document.getElementById('start-rps-btn').disabled = false;
+      document.getElementById('start-rps-btn').disabled = false; // 게임 완전히 종료 시만 버튼 다시 활성화
     });
 
     function addMessage(type, text) {
