@@ -2,18 +2,47 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>미니게임 천국</title>
   <script src="/socket.io/socket.io.js"></script>
   <style>
-    body { background-color: #2b1d17; color: #fff; font-family: sans-serif; display: flex; justify-content: center; padding: 20px; }
-    .card { background: #3d2920; border-radius: 12px; padding: 20px; width: 420px; margin-bottom: 15px; border: 1px solid #543a2e; }
+    * { box-sizing: border-box; }
+    body { 
+      background-color: #2b1d17; 
+      color: #fff; 
+      font-family: sans-serif; 
+      display: flex; 
+      justify-content: center; 
+      align-items: center;
+      min-height: 100vh;
+      margin: 0; 
+      padding: 10px; 
+    }
+    #app {
+      width: 100%;
+      max-width: 450px;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+    .card { 
+      background: #3d2920; 
+      border-radius: 12px; 
+      padding: 15px; 
+      width: 100%; 
+      border: 1px solid #543a2e; 
+    }
     .header { display: flex; justify-content: space-between; align-items: center; }
-    .btn { padding: 8px 16px; border-radius: 8px; border: none; cursor: pointer; font-weight: bold; }
+    .btn { padding: 10px 16px; border-radius: 8px; border: none; cursor: pointer; font-weight: bold; font-size: 14px; }
     .btn-danger { background-color: #e74c3c; color: white; }
     .btn-success { background-color: #10ac84; color: white; width: 100%; padding: 12px; font-size: 16px; margin-top: 10px; }
-    input, select { background: #fffde8; border: 1px solid #ccc; padding: 6px 10px; border-radius: 6px; color: #333; }
+    input, select { background: #fffde8; border: 1px solid #ccc; padding: 8px 10px; border-radius: 6px; color: #333; font-size: 14px; width: 100%; }
     .row { margin: 10px 0; display: flex; align-items: center; gap: 8px; }
-    .chat-box { background: #1e130e; height: 180px; border-radius: 8px; padding: 10px; overflow-y: auto; color: #ffab76; font-size: 14px; }
+    .row label { white-space: nowrap; font-size: 14px; }
+    .chat-box { background: #1e130e; height: 150px; border-radius: 8px; padding: 10px; overflow-y: auto; color: #ffab76; font-size: 14px; }
+    h2 { font-size: 1.2rem; margin: 0 0 10px 0; }
+    h3 { font-size: 1rem; margin: 0 0 8px 0; }
+    p { margin: 8px 0; font-size: 14px; }
   </style>
 </head>
 <body>
@@ -23,14 +52,14 @@
     <div id="loginView" class="card">
       <h2>🎮 미니게임 천국</h2>
       <div class="row">
-        <input type="text" id="usernameInput" placeholder="닉네임 입력" style="flex:1;">
+        <input type="text" id="usernameInput" placeholder="닉네임 입력">
       </div>
       <div class="row">
-        <button class="btn btn-success" onclick="createRoom()">방 만들기</button>
+        <button class="btn btn-success" style="margin-top:0;" onclick="createRoom()">방 만들기</button>
       </div>
-      <div class="row">
+      <div class="row" style="gap:5px;">
         <input type="text" id="roomCodeInput" placeholder="방 코드 6자리" style="flex:1;">
-        <button class="btn" style="background:#8c5338; color:white;" onclick="joinRoom()">입장</button>
+        <button class="btn" style="background:#8c5338; color:white; padding:8px 12px;" onclick="joinRoom()">입장</button>
       </div>
     </div>
 
@@ -38,26 +67,45 @@
     <div id="roomView" class="card" style="display: none;">
       <div class="header">
         <h2>🏠 방 코드: <span id="roomCodeDisplay">-</span></h2>
-        <button id="leaveBtn" class="btn btn-danger" onclick="leaveRoom()">🚪 방 나가기</button>
+        <button id="leaveBtn" class="btn btn-danger" style="padding:6px 10px; font-size:12px;" onclick="leaveRoom()">방 나가기</button>
       </div>
       <p>👥 인원: <span id="playerCount">0</span>명</p>
       <p>접속자: <span id="playerList">-</span></p>
       <hr style="border-color: #543a2e;">
 
       <div class="row">
-        <label>🎮 게임 모드:</label>
+        <label>🎮 모드:</label>
         <select id="gameModeSelect" onchange="onModeChange()">
-          <option value="mafia">마피아 게임 (6명이상)</option>
-          <option value="liar">라이어 게임 (3명이상)</option>
-          <option value="shiritori">끝말잇기 (2명이상)</option>
-          <option value="choseong">초성 퀴즈 (2명이상)</option>
+          <option value="mafia">마피아 게임 (6명 이상)</option>
+          <option value="liar">라이어 게임 (3명 이상)</option>
+          <option value="shiritori">끝말잇기 (2명 이상)</option>
+          <option value="choseong">초성 퀴즈 (2명 이상)</option>
         </select>
       </div>
 
-      <div id="mafiaOptions">
+      <!-- 마피아 세부 설정 -->
+      <div id="mafiaOptions" style="display: none;">
         <div class="row">
-          <label>낮 시간:</label>
-          <input type="number" id="dayTimeInput" value="60" style="width: 60px;"> 초
+          <label>🕵️ 마피아 수:</label>
+          <select id="mafiaCountSelect" onchange="onMafiaSettingChange()">
+            <option value="1">1명</option>
+            <option value="2">2명</option>
+            <option value="3">3명</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- 라이어 게임 세부 설정 -->
+      <div id="liarOptions" style="display: none;">
+        <div class="row">
+          <label>📂 카테고리:</label>
+          <select id="liarCategorySelect" onchange="onLiarSettingChange()">
+            <option value="all">랜덤 (전체)</option>
+            <option value="음식">음식</option>
+            <option value="동물">동물</option>
+            <option value="장소">장소</option>
+            <option value="물건">물건</option>
+          </select>
         </div>
       </div>
 
@@ -66,11 +114,11 @@
 
     <!-- 채팅창 화면 -->
     <div id="chatCard" class="card" style="display: none;">
-      <h3 style="text-align: center;">⏳ 대기 중</h3>
+      <h3>💬 대기실 채팅</h3>
       <div id="chatBox" class="chat-box"></div>
-      <div class="row" style="margin-top: 10px;">
+      <div class="row" style="margin-top: 10px; margin-bottom:0; gap:5px;">
         <input type="text" id="msgInput" style="flex: 1;" placeholder="메시지 입력" onkeypress="if(event.keyCode==13) sendMsg()">
-        <button class="btn" style="background:#8c5338; color:white;" onclick="sendMsg()">전송</button>
+        <button class="btn" style="background:#8c5338; color:white; padding:8px 12px;" onclick="sendMsg()">전송</button>
       </div>
     </div>
   </div>
@@ -102,6 +150,16 @@
     function onModeChange() {
       const mode = document.getElementById('gameModeSelect').value;
       socket.emit('change_game_mode', { roomId: currentRoomId, gameMode: mode });
+    }
+
+    function onMafiaSettingChange() {
+      const mafiaCount = document.getElementById('mafiaCountSelect').value;
+      socket.emit('change_mafia_settings', { roomId: currentRoomId, mafiaCount });
+    }
+
+    function onLiarSettingChange() {
+      const liarCategory = document.getElementById('liarCategorySelect').value;
+      socket.emit('change_liar_settings', { roomId: currentRoomId, liarCategory });
     }
 
     function startGame() {
@@ -142,10 +200,17 @@
 
       const isHost = socket.id === data.host;
       document.getElementById('gameModeSelect').disabled = !isHost;
+      document.getElementById('mafiaCountSelect').disabled = !isHost;
+      document.getElementById('liarCategorySelect').disabled = !isHost;
       document.getElementById('startBtn').style.display = isHost ? 'block' : 'none';
       
       document.getElementById('gameModeSelect').value = data.gameMode;
+      document.getElementById('mafiaCountSelect').value = data.mafiaCount || 1;
+      document.getElementById('liarCategorySelect').value = data.liarCategory || 'all';
+
+      // 모드별 설정 화면 토글
       document.getElementById('mafiaOptions').style.display = (data.gameMode === 'mafia') ? 'block' : 'none';
+      document.getElementById('liarOptions').style.display = (data.gameMode === 'liar') ? 'block' : 'none';
     });
   </script>
 </body>
