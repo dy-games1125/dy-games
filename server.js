@@ -88,7 +88,9 @@ io.on('connection', (socket) => {
       players: [],
       host: socket.id,
       gameMode: 'mafia',
-      gameStarted: false
+      gameStarted: false,
+      mafiaCount: 1, // 기본 마피아 수
+      liarCategory: 'all' // 기본 라이어 카테고리
     };
 
     socket.join(roomId);
@@ -119,6 +121,24 @@ io.on('connection', (socket) => {
     const room = rooms[roomId];
     if (room && room.host === socket.id && !room.gameStarted) {
       room.gameMode = gameMode;
+      broadcastRoomState(roomId);
+    }
+  });
+
+  // 마피아 세부 설정 변경 (방장 권한)
+  socket.on('change_mafia_settings', ({ roomId, mafiaCount }) => {
+    const room = rooms[roomId];
+    if (room && room.host === socket.id && !room.gameStarted) {
+      room.mafiaCount = parseInt(mafiaCount);
+      broadcastRoomState(roomId);
+    }
+  });
+
+  // 라이어 카테고리 설정 변경 (방장 권한)
+  socket.on('change_liar_settings', ({ roomId, liarCategory }) => {
+    const room = rooms[roomId];
+    if (room && room.host === socket.id && !room.gameStarted) {
+      room.liarCategory = liarCategory;
       broadcastRoomState(roomId);
     }
   });
@@ -187,7 +207,9 @@ function broadcastRoomState(roomId) {
     players: room.players,
     host: room.host,
     gameMode: room.gameMode,
-    gameStarted: room.gameStarted
+    gameStarted: room.gameStarted,
+    mafiaCount: room.mafiaCount,
+    liarCategory: room.liarCategory
   });
 }
 
