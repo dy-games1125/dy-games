@@ -285,35 +285,24 @@
             <button class="btn" style="background:#10ac84; color:white; padding:8px 12px;" onclick="submitChoseong()">제출</button>
           </div>
         `;
-      } else if (gameMode === 'shiritori') {
+      } else if (gameMode === 'shiritori' || gameMode === 'liar') {
         const isHost = currentRoomData && socket.id === currentRoomData.host;
+        const modeName = gameMode === 'shiritori' ? '끝말잇기' : '라이어 게임';
         contentArea.innerHTML = `
-          <p>🗣️ 끝말잇기가 시작되었습니다! 순서 및 첫 단어 시작 주자를 가위바위보로 정합니다.</p>
-          <div id="shiritoriTurnNotice" class="turn-highlight" style="text-align:center; margin:10px 0;">가위바위보 순서 정하기 진행 중...</div>
-          ${isHost ? '<button id="shiritoriRpsStartBtn" class="btn btn-success" onclick="triggerRps()">✌️ 가위바위보 시작</button>' : '<p id="shiritoriRpsWaitMsg" style="text-align:center; color:#f39c12;">방장이 가위바위보를 시작하기를 기다리는 중...</p>'}
-          <div id="shiritoriRpsButtons" style="display: none; gap: 5px; margin: 10px 0;">
+          <p>🎮 ${modeName}이 시작되었습니다! 순서 및 시작 주자를 가위바위보로 정합니다.</p>
+          <div id="turnNotice" class="turn-highlight" style="text-align:center; margin:10px 0;">가위바위보 순서 정하기 진행 중...</div>
+          ${isHost ? '<button id="rpsStartBtn" class="btn btn-success" onclick="triggerRps()">✌️ 가위바위보 시작</button>' : '<p id="rpsWaitMsg" style="text-align:center; color:#f39c12;">방장이 가위바위보를 시작하기를 기다리는 중...</p>'}
+          <div id="rpsButtons" style="display: none; gap: 5px; margin: 10px 0;">
             <button class="btn" style="flex:1; background:#3498db; color:white;" onclick="playRPS('rock')">✊ 바위</button>
             <button class="btn" style="flex:1; background:#e67e22; color:white;" onclick="playRPS('paper')">✋ 보</button>
             <button class="btn" style="flex:1; background:#e74c3c; color:white;" onclick="playRPS('scissors')">✌️ 가위</button>
           </div>
           <div style="background:#2e1e17; padding:10px; border-radius:6px; margin:10px 0; text-align:center;">
-            <p>입력한 단어: <strong id="currentWord" style="color:#f39c12; font-size:1.2rem;">없음</strong></p>
+            <p>공유된 내용: <strong id="currentWord" style="color:#f39c12; font-size:1.2rem;">없음</strong></p>
           </div>
           <div class="row" style="gap:5px;">
-            <input type="text" id="shiritoriInput" placeholder="단어 입력 (첫 판만 한방단어 금지)" style="flex:1;" onkeypress="if(event.keyCode==13) submitShiritori()">
-            <button class="btn" style="background:#10ac84; color:white; padding:8px 12px;" onclick="submitShiritori()">입력</button>
-          </div>
-        `;
-      } else if (gameMode === 'liar') {
-        const isHost = currentRoomData && socket.id === currentRoomData.host;
-        contentArea.innerHTML = `
-          <p>🕵️ 라이어 게임이 시작되었습니다!</p>
-          <div id="liarTurnNotice" class="turn-highlight" style="text-align:center; margin:10px 0;">가위바위보 순서 정하기 진행 중...</div>
-          ${isHost ? '<button id="liarRpsStartBtn" class="btn btn-success" onclick="triggerRps()">✌️ 가위바위보 시작</button>' : '<p id="liarRpsWaitMsg" style="text-align:center; color:#f39c12;">방장이 가위바위보를 시작하기를 기다리는 중...</p>'}
-          <div id="liarRpsButtons" style="display: none; gap: 5px; margin: 10px 0;">
-            <button class="btn" style="flex:1; background:#3498db; color:white;" onclick="playRPS('rock')">✊ 바위</button>
-            <button class="btn" style="flex:1; background:#e67e22; color:white;" onclick="playRPS('paper')">✋ 보</button>
-            <button class="btn" style="flex:1; background:#e74c3c; color:white;" onclick="playRPS('scissors')">✌️ 가위</button>
+            <input type="text" id="gameInput" placeholder="가위바위보 완료 후 입력 가능" style="flex:1;" disabled onkeypress="if(event.keyCode==13) submitGameInput()">
+            <button id="gameSubmitBtn" class="btn" style="background:#10ac84; color:white; padding:8px 12px;" disabled onclick="submitGameInput()">입력</button>
           </div>
         `;
       } else if (gameMode === 'mafia') {
@@ -331,9 +320,9 @@
     }
 
     socket.on('show_rps_buttons', () => {
-      const rpsBtns = document.getElementById('shiritoriRpsButtons') || document.getElementById('liarRpsButtons');
-      const startBtn = document.getElementById('shiritoriRpsStartBtn') || document.getElementById('liarRpsStartBtn');
-      const waitMsg = document.getElementById('shiritoriRpsWaitMsg') || document.getElementById('liarRpsWaitMsg');
+      const rpsBtns = document.getElementById('rpsButtons');
+      const startBtn = document.getElementById('rpsStartBtn');
+      const waitMsg = document.getElementById('rpsWaitMsg');
       
       if (rpsBtns) rpsBtns.style.display = 'flex';
       if (startBtn) startBtn.style.display = 'none';
@@ -343,9 +332,24 @@
     function playRPS(choice) {
       const choices = { rock: '바위', paper: '보', scissors: '가위' };
       alert(`가위바위보 선택 완료: ${choices[choice]}`);
-      const notice = document.getElementById('shiritoriTurnNotice') || document.getElementById('liarTurnNotice');
-      if (notice) notice.innerText = `가위바위보 완료! 승리자부터 시작합니다.`;
+      socket.emit('play_rps', { roomId: currentRoomId, choice });
+      
+      const rpsBtns = document.getElementById('rpsButtons');
+      if (rpsBtns) rpsBtns.style.display = 'none';
+
+      const notice = document.getElementById('turnNotice');
+      if (notice) notice.innerText = `가위바위보 선택 완료! 결과를 기다리는 중...`;
     }
+
+    socket.on('rps_result', ({ winner }) => {
+      const notice = document.getElementById('turnNotice');
+      if (notice) notice.innerText = `🎉 가위바위보 승리자: ${winner}님! 입력을 시작합니다.`;
+
+      const inputEl = document.getElementById('gameInput');
+      const submitBtn = document.getElementById('gameSubmitBtn');
+      if (inputEl) inputEl.disabled = false;
+      if (submitBtn) submitBtn.disabled = false;
+    });
 
     function submitChoseong() {
       const val = document.getElementById('choseongAnswerInput').value;
@@ -354,14 +358,19 @@
       document.getElementById('choseongAnswerInput').value = '';
     }
 
-    function submitShiritori() {
-      const inputEl = document.getElementById('shiritoriInput');
+    function submitGameInput() {
+      const inputEl = document.getElementById('gameInput');
       const val = inputEl.value.trim();
       if (!val) return;
       
-      document.getElementById('currentWord').innerText = val;
+      socket.emit('game_input_word', { roomId: currentRoomId, word: val });
       inputEl.value = '';
     }
+
+    socket.on('update_game_word', ({ username, word }) => {
+      const wordEl = document.getElementById('currentWord');
+      if (wordEl) wordEl.innerText = `${word} (${username})`;
+    });
 
     socket.on('show_final_ranking', (sortedScores) => {
       document.getElementById('gamePlayView').style.display = 'none';
