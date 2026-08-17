@@ -23,34 +23,38 @@ const LIAR_WORDS = {
 const CHOSEONG_DATA = [
   { choseong: 'ㄱㅇ', word: '고양이' }, { choseong: 'ㄱㅇ', word: '강아지' }, { choseong: 'ㄴㅂ', word: '나비' }, { choseong: 'ㅂㄷ', word: '바다' },
   { choseong: 'ㅅㄱ', word: '사과' }, { choseong: 'ㅎㄴ', word: '하늘' }, { choseong: 'ㅋㅍ', word: '커피' }, { choseong: 'ㅋㅍ', word: '키보드' },
-  { choseong: 'ㅂㄴㄴ', word: '바나나' }, { choseong: 'ㅍㄷ', word: '포도' }, { choseong: 'ㅅㅂ', word: '수박' }, { choseong: '딸기', word: '딸기' },
-  { choseong: 'ㅋㅇ', word: '키위' }, { choseong: 'ㅁㄹ', word: '멜론' }, { choseong: 'ㅇㄹㅈ', word: '오렌지' }, { choseong: '복숭아', word: 'ㅂㅅㅇ' },
-  { choseong: 'ㅊㄹ', word: '체리' }, { choseong: 'ㄹㅁ', word: '레몬' }, { choseong: 'ㄱㄹ', word: '귤' }, { choseong: '감자', word: 'ㄱㅈ' },
-  { choseong: '고구마', word: 'ㄱㄱㅁ' }, { choseong: '양파', word: 'ㅇㅍ' }, { choseong: '당근', word: 'ㄷㄱ' }, { choseong: '오이', word: 'ㅇㅇ' },
-  { choseong: '호박', word: 'ㅎㅂ' }, { choseong: '배추', word: 'ㅂㅊ' }, { choseong: '무', word: 'ㅁ' }, { choseong: '마늘', word: 'ㅁㄴ' },
-  { choseong: '버섯', word: 'ㅂㅅ' }, { choseong: '고추', word: 'ㄱㅊ' }, { choseong: 'ㅎㅂㄱ', word: '햄버거' }, { choseong: 'ㅍㅈ', word: '피자' },
-  { choseong: 'ㅊㅋ', word: '치킨' }, { choseong: 'ㄹㅁ', word: '라면' }, { choseong: '떡볶이', word: 'ㄸㅂㅇ' }, { choseong: '순대', word: 'ㅅㄷ' },
-  { choseong: '튀김', word: 'ㅌㄱ' }, { choseong: '어묵', word: 'ㅇㅁ' }, { choseong: '김밥', word: 'ㄱㅂ' }, { choseong: '돈까스', word: 'ㄷㄲㅅ' },
-  { choseong: '초밥', word: 'ㅊㅂ' }, { choseong: '우동', word: 'ㅇㄷ' }, { choseong: '짜장면', word: 'ㅉㅈㅁ' }, { choseong: '짬뽕', word: 'ㅉㅃ' },
-  { choseong: '탕수육', word: 'ㅌㅅㅇ' }, { choseong: '삼겹살', word: 'ㅅㄱㅅ' }, { choseong: '갈비', word: 'ㄱㅂ' }, { choseong: '족발', word: 'ㅈㅂ' },
-  { choseong: '보쌈', word: 'ㅂㅆ' }, { choseong: '곱창', word: 'ㄱㅊ' }, { choseong: 'ㅎㄹㅇ', word: '호랑이' }, { choseong: 'ㅅㅈ', word: '사자' },
+  { choseong: 'ㅂㄴㄴ', word: '바나나' }, { choseong: 'ㅍㄷ', word: '포도' }, { choseong: 'ㅅㅂ', word: '수박' }, { choseong: 'ㄸㄱ', word: '딸기' },
+  { choseong: 'ㅋㅇ', word: '키위' }, { choseong: 'ㅁㄹ', word: '멜론' }, { choseong: 'ㅇㄹㅈ', word: '오렌지' }, { choseong: 'ㅂㅅㅇ', word: '복숭아' },
+  { choseong: 'ㅊㄹ', word: '체리' }, { choseong: 'ㄹㅁ', word: '레몬' }, { choseong: 'ㄱㄹ', word: '귤' }, { choseong: 'ㄱㅈ', word: '감자' },
+  { choseong: 'ㄱㄱㅁ', word: '고구마' }, { choseong: 'ㅇㅍ', word: '양파' }, { choseong: 'ㄷㄱ', word: '당근' }, { choseong: 'ㅇㅇ', word: '오이' },
+  { choseong: 'ㅎㅂ', word: '호박' }, { choseong: 'ㅂㅊ', word: '배추' }, { choseong: 'ㅁ', word: '무' }, { choseong: 'ㅁㄴ', word: '마늘' },
+  { choseong: 'ㅂㅅ', word: '버섯' }, { choseong: 'ㄱㅊ', word: '고추' }, { choseong: 'ㅎㅂㄱ', word: '햄버거' }, { choseong: 'ㅍㅈ', word: '피자' },
+  { choseong: 'ㅊㅋ', word: '치킨' }, { choseong: 'ㄹㅁ', word: '라면' }, { choseong: 'ㄸㅂㅇ', word: '떡볶이' }, { choseong: 'ㅅㄷ', word: '순대' },
+  { choseong: 'ㅌㄱ', word: '튀김' }, { choseong: 'ㅇㅁ', word: '어묵' }, { choseong: 'ㄱㅂ', word: '김밥' }, { choseong: 'ㄷㄲㅅ', word: '돈까스' },
+  { choseong: 'ㅊㅂ', word: '초밥' }, { choseong: 'ㅇㄷ', word: '우동' }, { choseong: 'ㅉㅈㅁ', word: '짜장면' }, { choseong: 'ㅉㅃ', word: '짬뽕' },
+  { choseong: 'ㅌㅅㅇ', word: '탕수육' }, { choseong: 'ㅅㄱㅅ', word: '삼겹살' }, { choseong: 'ㄱㅂ', word: '갈비' }, { choseong: 'ㅈㅂ', word: '족발' },
+  { choseong: 'ㅂㅆ', word: '보쌈' }, { choseong: 'ㄱㅊ', word: '곱창' }, { choseong: 'ㅎㄹㅇ', word: '호랑이' }, { choseong: 'ㅅㅈ', word: '사자' },
   { choseong: 'ㄱㄹ', word: '기린' }, { choseong: 'ㅋㄲㄹ', word: '코끼리' }, { choseong: 'ㅍㄷ', word: '판다' }, { choseong: 'ㅍㄱ', word: '펭귄' },
-  { choseong: 'ㄷㄹㄱ', word: '돌고래' }, { choseong: '토끼', word: 'ㅌㄲ' }, { choseong: '다람쥐', word: 'ㄷㄹㅈ' }, { choseong: '독수리', word: 'ㄷㅅㄹ' },
-  { choseong: '올빼미', word: 'ㅇㅃㅁ' }, { choseong: '캥거루', word: 'ㅋㄱㄹ' }, { choseong: '알파카', word: 'ㅇㅍㅋ' }, { choseong: '하마', word: 'ㅎㅁ' },
-  { choseong: '악어', word: 'ㅇㅇ' }, { choseong: '사슴', word: 'ㅅㅅ' }, { choseong: '치타', word: 'ㅊㅌ' }, { choseong: '카멜레온', word: 'ㅋㅁㄹㅇ' },
-  { choseong: '북극곰', word: 'ㅂㄱㄱ' }, { choseong: '바다표범', word: 'ㅂㄷㅍㅂ' }, { choseong: 'ㅅㅂ관', word: '소방관' }, { choseong: 'ㄱㅊ관', word: '경찰관' },
+  { choseong: 'ㄷㄹㄱ', word: '돌고래' }, { choseong: 'ㅌㄲ', word: '토끼' }, { choseong: 'ㄷㄹㅈ', word: '다람쥐' }, { choseong: 'ㄷㅅㄹ', word: '독수리' },
+  { choseong: 'ㅇㅃㅁ', word: '올빼미' }, { choseong: 'ㅋㄱㄹ', word: '캥거루' }, { choseong: 'ㅇㅍㅋ', word: '알파카' }, { choseong: 'ㅎㅁ', word: '하마' },
+  { choseong: 'ㅇㅇ', word: '악어' }, { choseong: 'ㅅㅅ', word: '사슴' }, { choseong: 'ㅊㅌ', word: '치타' }, { choseong: 'ㅋㅁㄹㅇ', word: '카멜레온' },
+  { choseong: 'ㅂㄱㄱ', word: '북극곰' }, { choseong: 'ㅂㄷㅍㅂ', word: '바다표범' }, { choseong: 'ㅅㅂㄱ', word: '소방관' }, { choseong: 'ㄱㅊㄱ', word: '경찰관' },
   { choseong: 'ㅇㅅ', word: '의사' }, { choseong: 'ㄱㅅ', word: '교사' }, { choseong: 'ㅇㄹㅅ', word: '요리사' }, { choseong: 'ㅍㅅ', word: '판사' },
   { choseong: 'ㅎㄱ', word: '화가' }, { choseong: 'ㄱㅅ', word: '가수' }, { choseong: 'ㅇㄷㅅㅅ', word: '운동선수' }, { choseong: 'ㄱㅊㄱ', word: '건축가' },
   { choseong: 'ㄱㅈ', word: '기자' }, { choseong: 'ㅂㅎㅅ', word: '변호사' }, { choseong: 'ㅅㅇㅅ', word: '수의사' }, { choseong: 'ㅁㅅㅅ', word: '마술사' },
-  { choseong: 'ㅅㅈㅈㄱ', word: '사진작가' }, { choseong: 'ㅁㅇㅅ', word: '미용사' }, { choseong: 'ㄱㅎㅅ', word: '간호사' }, { choseong: '약사', word: 'ㅇㅅ' },
-  { choseong: 'ㄴㅇ', word: '농부' }, { choseong: '어부', word: 'ㅇㅂ' }, { choseong: '놀이공원', word: 'ㄴㅇㄱㅇ' }, { choseong: '영화관', word: 'ㅇㅎㄱ' },
-  { choseong: '도서관', word: 'ㄷㅅㄱ' }, { choseong: '해수욕장', word: 'ㅎㅅㅇㅈ' }, { choseong: '미술관', word: 'ㅁㅅㄱ' }, { choseong: '박물관', word: 'ㅂㅁㄱ' }, { choseong: '공항', word: 'ㄱㅎ' }, { choseong: '지하철역', word: 'ㅈㅎㅊㅇ' }, { choseong: '캠핑장', word: 'ㅋㅍㅈ' }, { choseong: '수영장', word: 'ㅅㅇㅈ' }
+  { choseong: 'ㅅㅈㅈㄱ', word: '사진작가' }, { choseong: 'ㅁㅇㅅ', word: '미용사' }, { choseong: 'ㄱㅎㅅ', word: '간호사' }, { choseong: 'ㅇㅅ', word: '약사' },
+  { choseong: 'ㄴㅂ', word: '농부' }, { choseong: 'ㅇㅂ', word: '어부' }, { choseong: 'ㄴㅇㄱㅇ', word: '놀이공원' }, { choseong: 'ㅇㅎㄱ', word: '영화관' },
+  { choseong: 'ㄷㅅㄱ', word: '도서관' }, { choseong: 'ㅎㅅㅇㅈ', word: '해수욕장' }, { choseong: 'ㅁㅅㄱ', word: '미술관' }, { choseong: 'ㅂㅁㄱ', word: '박물관' }, { choseong: 'ㄱㅎ', word: '공항' }, { choseong: 'ㅈㅎㅊㅇ', word: '지하철역' }, { choseong: 'ㅋㅍㅈ', word: '캠핑장' }, { choseong: 'ㅅㅇㅈ', word: '수영장' }
 ];
 
 io.on('connection', (socket) => {
-  // 방 입장
+  // 방 입장 (닉네임 + 방 코드 처리)
   socket.on('join_room', ({ roomId, username }) => {
+    if (!roomId || !username) return;
+
     socket.join(roomId);
+    socket.roomId = roomId;
+    socket.username = username;
 
     if (!rooms[roomId]) {
       rooms[roomId] = {
@@ -83,21 +87,36 @@ io.on('connection', (socket) => {
     const room = rooms[roomId];
 
     if (room.players.length >= 18) {
-      return socket.emit('system_message', '⚠️ 방이 가득 찼습니다. (최대 18명)');
+      socket.emit('system_message', '⚠️ 방이 가득 찼습니다. (최대 18명)');
+      socket.leave(roomId);
+      return;
     }
 
     room.players.push({ id: socket.id, username });
     room.scores[socket.id] = 0;
 
+    socket.emit('join_success', { roomId, username });
+
     io.to(roomId).emit('update_room', {
+      roomId,
       players: room.players,
       host: room.host,
       gameMode: room.gameMode,
-      gameStarted: room.gameStarted
+      gameStarted: room.gameStarted,
+      liarCategory: room.liarCategory,
+      mafiaDayTime: room.mafiaDayTime,
+      mafiaCount: room.mafiaCount,
+      policeCount: room.policeCount,
+      doctorCount: room.doctorCount,
+      shiritoriTime: room.shiritoriTime,
+      shiritoriLen: room.shiritoriLen,
+      targetScore: room.targetScore
     });
+
+    io.to(roomId).emit('system_message', `👋 [${username}]님이 방에 입장하셨습니다.`);
   });
 
-  // 방 설정 변경
+  // 방 설정 변경 (방장 전용)
   socket.on('update_settings', ({ roomId, settings }) => {
     const room = rooms[roomId];
     if (!room || room.host !== socket.id) return;
@@ -108,7 +127,7 @@ io.on('connection', (socket) => {
     if (settings.shiritoriLen) room.shiritoriLen = Number(settings.shiritoriLen);
     if (settings.targetScore) room.targetScore = Number(settings.targetScore);
 
-    // 마피아 직책 인원 검증 로직
+    // 마피아 직책 검증 및 설정
     if (room.gameMode === 'mafia' && settings.mafiaCount !== undefined) {
       const totalPlayers = room.players.length;
       const mCount = Number(settings.mafiaCount);
@@ -119,12 +138,9 @@ io.on('connection', (socket) => {
       const maxPolice = Math.floor(totalPlayers / 3) || 1;
       const maxDoctor = Math.floor(totalPlayers / 3) || 1;
 
-      // 1. 최소 1명 이상 (0명 제외)
       if (mCount < 1 || pCount < 1 || dCount < 1) {
         return socket.emit('system_message', '⚠️ 모든 직책(마피아, 경찰, 의사)은 최소 1명 이상이어야 합니다.');
       }
-
-      // 2. 최대/최소 조건 검증
       if (mCount < minMafia) {
         return socket.emit('system_message', `⚠️ 마피아는 최소 ${minMafia}명 이상이어야 합니다.`);
       }
@@ -134,8 +150,6 @@ io.on('connection', (socket) => {
       if (dCount > maxDoctor) {
         return socket.emit('system_message', `⚠️ 의사는 최대 ${maxDoctor}명까지 설정 가능합니다.`);
       }
-
-      // 3. 시민 1명 이상 보장
       if (mCount + pCount + dCount >= totalPlayers && totalPlayers > 0) {
         return socket.emit('system_message', '⚠️ 특수 직책의 총합은 전체 플레이어 수보다 적어야 합니다 (시민 최소 1명 필요).');
       }
@@ -147,10 +161,19 @@ io.on('connection', (socket) => {
     }
 
     io.to(roomId).emit('update_room', {
+      roomId,
       players: room.players,
       host: room.host,
       gameMode: room.gameMode,
-      gameStarted: room.gameStarted
+      gameStarted: room.gameStarted,
+      liarCategory: room.liarCategory,
+      mafiaDayTime: room.mafiaDayTime,
+      mafiaCount: room.mafiaCount,
+      policeCount: room.policeCount,
+      doctorCount: room.doctorCount,
+      shiritoriTime: room.shiritoriTime,
+      shiritoriLen: room.shiritoriLen,
+      targetScore: room.targetScore
     });
   });
 
@@ -159,7 +182,6 @@ io.on('connection', (socket) => {
     const room = rooms[roomId];
     if (!room || room.host !== socket.id) return;
 
-    // 1. 라이어 게임
     if (room.gameMode === 'liar') {
       if (room.players.length < 2) {
         return socket.emit('system_message', '⚠️ 라이어 게임은 최소 2명 이상 필요합니다.');
@@ -180,7 +202,6 @@ io.on('connection', (socket) => {
       });
       io.to(roomId).emit('game_started', { mode: 'liar' });
     }
-    // 2. 마피아 게임
     else if (room.gameMode === 'mafia') {
       if (room.players.length < 6) {
         return socket.emit('system_message', '⚠️ 마피아 게임은 최소 6명 이상 필요합니다.');
@@ -188,7 +209,6 @@ io.on('connection', (socket) => {
       room.gameStarted = true;
       io.to(roomId).emit('game_started', { mode: 'mafia' });
     }
-    // 3. 끝말잇기
     else if (room.gameMode === 'shiritori') {
       room.gameStarted = true;
       room.turnIndex = 0;
@@ -200,14 +220,15 @@ io.on('connection', (socket) => {
       });
       startShiritoriTimer(roomId);
     }
-    // 4. 초성 퀴즈
     else if (room.gameMode === 'choseong') {
       room.gameStarted = true;
+      room.players.forEach(p => room.scores[p.id] = 0);
+      io.to(roomId).emit('game_started', { mode: 'choseong' });
       nextChoseongQuestion(roomId);
     }
   });
 
-  // 메시지 및 정답 입력
+  // 메시지 및 정답 처리
   socket.on('send_message', ({ roomId, message }) => {
     const room = rooms[roomId];
     if (!room) return;
@@ -215,7 +236,7 @@ io.on('connection', (socket) => {
     const sender = room.players.find(p => p.id === socket.id);
     const username = sender ? sender.username : '익명';
 
-    // 끝말잇기 검증
+    // 끝말잇기 입력 검증
     if (room.gameStarted && room.gameMode === 'shiritori') {
       const currentPlayer = room.players[room.turnIndex];
       if (socket.id === currentPlayer.id) {
@@ -243,7 +264,7 @@ io.on('connection', (socket) => {
     // 초성 퀴즈 정답 검증
     if (room.gameStarted && room.gameMode === 'choseong' && room.currentChoseongObj) {
       if (message.trim() === room.currentChoseongObj.word) {
-        room.scores[socket.id] += 1;
+        room.scores[socket.id] = (room.scores[socket.id] || 0) + 1;
         io.to(roomId).emit('system_message', `🎉 [${username}]님 정답! (${room.currentChoseongObj.word})`);
 
         if (room.scores[socket.id] >= room.targetScore) {
@@ -260,19 +281,25 @@ io.on('connection', (socket) => {
   });
 
   socket.on('disconnect', () => {
-    for (const roomId in rooms) {
+    const roomId = socket.roomId;
+    if (roomId && rooms[roomId]) {
       const room = rooms[roomId];
       room.players = room.players.filter(p => p.id !== socket.id);
+      delete room.scores[socket.id];
+
       if (room.players.length === 0) {
+        if (room.shiritoriTimer) clearInterval(room.shiritoriTimer);
         delete rooms[roomId];
       } else {
         if (room.host === socket.id) room.host = room.players[0].id;
         io.to(roomId).emit('update_room', {
+          roomId,
           players: room.players,
           host: room.host,
           gameMode: room.gameMode,
           gameStarted: room.gameStarted
         });
+        io.to(roomId).emit('system_message', `🚪 [${socket.username}]님이 퇴장하셨습니다.`);
       }
     }
   });
@@ -283,6 +310,8 @@ function startShiritoriTimer(roomId) {
   let timeLeft = room.shiritoriTime;
 
   io.to(roomId).emit('timer_tick', { timeLeft });
+
+  if (room.shiritoriTimer) clearInterval(room.shiritoriTimer);
 
   room.shiritoriTimer = setInterval(() => {
     timeLeft--;
