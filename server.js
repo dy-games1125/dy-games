@@ -19,229 +19,230 @@ function generateRoomCode() {
 }
 
 const LIAR_WORDS = {
-  '음식': ['떡볶이', '김치찌개', '돈까스', '짜장면', '마라탕', '삼겹살', '초밥', '치킨', '피자', '햄버거', '파스타', '족발', '부대찌개', '비빔밥', '칼국수', '계란말이', '감자탕', '샤브샤브', '순대국', '떡갈비', '우동', '라멘'],
-  '동물': ['호랑이', '사자', '기린', '코끼리', '판다', '펭귄', '돌고래', '강아지', '고양이', '토끼', '다람쥐', '독수리', '올빼미', '캥거루', '알파카', '하마', '악어', '사슴', '치타', '카멜레온', '북극곰', '바다표범'],
-  '직업': ['소방관', '경찰관', '의사', '교사', '요리사', '비행기조종사', '판사', '화가', '가수', '운동선수', '프로그래머', '건축가', '기자', '변호사', '수의사', '우주비행사', '마술사', '사진작가', '미용사', '과학자', '외교관'],
-  '장소': ['놀이공원', '영화관', '도서관', '해수욕장', '미술관', '박물관', '공항', '지하철역', '캠핑장', '수영장', '동물원', '식물원', '백화점', '미용실', '편의점', '식당', '카페', '학교', '병원', '헬스장'],
-  '전자제품': ['스마트폰', '노트북', '태블릿', '스마트워치', '무선이어폰', '냉장고', '세탁기', '청소기', '에어컨', 'TV', '전자레인지', '에어프라이어', '식기세척기', '헤어드라이어', '게임기', '카메라', '빔프로젝트', '공기청정기']
+  '음식': ['떡볶이', '김치찌개', '돈까스', '짜장면', '마라탕', '삼겹살'],
+  '동물': ['호랑이', '사자', '기린', '코끼리', '판다', '강아지']
 };
 
 const CHOSEONG_DATA = [
-  { choseong: 'ㄱㅇ', word: '고양이' }, { choseong: 'ㄱㅇ', word: '강아지' }, { choseong: 'ㄴㅂ', word: '나비' }, { choseong: 'ㅂㄷ', word: '바다' },
-  { choseong: 'ㅅㄱ', word: '사과' }, { choseong: 'ㅎㄴ', word: '하늘' }, { choseong: 'ㅋㅍ', word: '커피' }, { choseong: 'ㅋㅍ', word: '키보드' },
-  { choseong: 'ㅂㄴㄴ', word: '바나나' }, { choseong: 'ㅍㄷ', word: '포도' }, { choseong: 'ㅅㅂ', word: '수박' }, { choseong: 'ㄸㄱ', word: '딸기' },
-  { choseong: 'ㅋㅇ', word: '키위' }, { choseong: 'ㅁㄹ', word: '멜론' }, { choseong: 'ㅇㄹㅈ', word: '오렌지' }, { choseong: 'ㅂㅅㅇ', word: '복숭아' },
-  { choseong: 'ㅊㄹ', word: '체리' }, { choseong: 'ㄹㅁ', word: '레몬' }, { choseong: 'ㄱㄹ', word: '귤' }, { choseong: 'ㄱㅈ', word: '감자' },
-  { choseong: 'ㄱㄱㅁ', word: '고구마' }, { choseong: 'ㅇㅍ', word: '양파' }, { choseong: 'ㄷㄱ', word: '당근' }, { choseong: 'ㅇㅇ', word: '오이' },
-  { choseong: 'ㅎㅂ', word: '호박' }, { choseong: 'ㅂㅊ', word: '배추' }, { choseong: 'ㅁ', word: '무' }, { choseong: 'ㅁㄴ', word: '마늘' },
-  { choseong: 'ㅂㅅ', word: '버섯' }, { choseong: 'ㄱㅊ', word: '고추' }, { choseong: 'ㅎㅂㄱ', word: '햄버거' }, { choseong: 'ㅍㅈ', word: '피자' },
-  { choseong: 'ㅊㅋ', word: '치킨' }, { choseong: 'ㄹㅁ', word: '라면' }, { choseong: 'ㄸㅂㅇ', word: '떡볶이' }, { choseong: 'ㅅㄷ', word: '순대' },
-  { choseong: 'ㅌㄱ', word: '튀김' }, { choseong: 'ㅇㅁ', word: '어묵' }, { choseong: 'ㄱㅂ', word: '김밥' }, { choseong: 'ㄷㄲㅅ', word: '돈까스' },
-  { choseong: 'ㅊㅂ', word: '초밥' }, { choseong: 'ㅇㄷ', word: '우동' }, { choseong: 'ㅉㅈㅁ', word: '짜장면' }, { choseong: 'ㅉㅃ', word: '짬뽕' },
-  { choseong: 'ㅌㅅㅇ', word: '탕수육' }, { choseong: 'ㅅㄱㅅ', word: '삼겹살' }, { choseong: 'ㄱㅂ', word: '갈비' }, { choseong: 'ㅈㅂ', word: '족발' },
-  { choseong: 'ㅂㅆ', word: '보쌈' }, { choseong: 'ㄱㅊ', word: '곱창' }, { choseong: 'ㅎㄹㅇ', word: '호랑이' }, { choseong: 'ㅅㅈ', word: '사자' },
-  { choseong: 'ㄱㄹ', word: '기린' }, { choseong: 'ㅋㄲㄹ', word: '코끼리' }, { choseong: 'ㅍㄷ', word: '판다' }, { choseong: 'ㅍㄱ', word: '펭귄' },
-  { choseong: 'ㄷㄹㄱ', word: '돌고래' }, { choseong: 'ㅌㄲ', word: '토끼' }, { choseong: 'ㄷㄹㅈ', word: '다람쥐' }, { choseong: 'ㄷㅅㄹ', word: '독수리' },
-  { choseong: 'ㅇㅃㅁ', word: '올빼미' }, { choseong: 'ㅋㄱㄹ', word: '캥거루' }, { choseong: 'ㅇㅍㅋ', word: '알파카' }, { choseong: 'ㅎㅁ', word: '하마' },
-  { choseong: 'ㅇㅇ', word: '악어' }, { choseong: 'ㅅㅅ', word: '사슴' }, { choseong: 'ㅊㅌ', word: '치타' }, { choseong: 'ㅋㅁㄹㅇ', word: '카멜레온' },
-  { choseong: 'ㅂㄱㄱ', word: '북극곰' }, { choseong: 'ㅂㄷㅍㅂ', word: '바다표범' }, { choseong: 'ㅅㅂㄱ', word: '소방관' }, { choseong: 'ㄱㅊㄱ', word: '경찰관' },
-  { choseong: 'ㅇㅅ', word: '의사' }, { choseong: 'ㄱㅅ', word: '교사' }, { choseong: 'ㅇㄹㅅ', word: '요리사' }, { choseong: 'ㅍㅅ', word: '판사' },
-  { choseong: 'ㅎㄱ', word: '화가' }, { choseong: 'ㄱㅅ', word: '가수' }, { choseong: 'ㅇㄷㅅㅅ', word: '운동선수' }, { choseong: 'ㄱㅊㄱ', word: '건축가' },
-  { choseong: 'ㄱㅈ', word: '기자' }, { choseong: 'ㅂㅎㅅ', word: '변호사' }, { choseong: 'ㅅㅇㅅ', word: '수의사' }, { choseong: 'ㅁㅅㅅ', word: '마술사' },
-  { choseong: 'ㅅㅈㅈㄱ', word: '사진작가' }, { choseong: 'ㅁㅇㅅ', word: '미용사' }, { choseong: 'ㄱㅎㅅ', word: '간호사' }, { choseong: 'ㅇㅅ', word: '약사' },
-  { choseong: 'ㄴㅂ', word: '농부' }, { choseong: 'ㅇㅂ', word: '어부' }, { choseong: 'ㄴㅇㄱㅇ', word: '놀이공원' }, { choseong: 'ㅇㅎㄱ', word: '영화관' },
-  { choseong: 'ㄷㅅㄱ', word: '도서관' }, { choseong: 'ㅎㅅㅇㅈ', word: '해수욕장' }, { choseong: 'ㅁㅅㄱ', word: '미술관' }, { choseong: 'ㅂㅁㄱ', word: '박물관' },
-  { choseong: 'ㄱㅎ', word: '공항' }, { choseong: 'ㅈㅎㅊㅇ', word: '지하철역' }, { choseong: 'ㅋㅍㅈ', word: '캠핑장' }, { choseong: 'ㅅㅇㅈ', word: '수영장' }
+  { choseong: 'ㄱㅇ', word: '고양이' }, { choseong: 'ㅅㄱ', word: '사과' },
+  { choseong: 'ㅎㄴ', word: '하늘' }, { choseong: 'ㅋㅍ', word: '커피' }
 ];
 
 io.on('connection', (socket) => {
+  // 1. 방 생성
   socket.on('create_room', ({ username }) => {
     if (!username) return;
     const roomId = generateRoomCode();
 
     rooms[roomId] = {
-      players: [],
+      players: [], // { id, username, isAlive, role }
       host: socket.id,
-      gameMode: 'liar',
+      gameMode: 'mafia', // liar, shiritori, choseong, mafia
       gameStarted: false,
+      
+      // 라이어 관련
       liarCategory: '음식',
       keyword: '',
       liarId: null,
-      rpsChoices: {},
       liarVotes: {},
       speakingOrder: [],
-      liarState: 'LOBBY',
-      mafiaDayTime: 60,
-      mafiaCount: 1,
-      policeCount: 1,
-      doctorCount: 1,
+      currentTurnIndex: 0,
+      turnCount: 0,
+
+      // 끝말잇기 관련
       shiritoriTime: 10,
       shiritoriLen: 2,
       currentWord: '',
-      turnIndex: 0,
+      shiritoriTurnIndex: 0,
       shiritoriTimer: null,
-      targetScore: 6,
+
+      // 초성 퀴즈 관련
+      targetScore: 5,
       scores: {},
-      currentChoseongObj: null
+      currentChoseongObj: null,
+
+      // 마피아 관련
+      phase: 'WAITING', // DAY_TALK, DAY_VOTE, NIGHT
+      nightActions: { mafia: null, doctor: null, police: null },
+      dayVotes: {}
     };
 
     socket.join(roomId);
     socket.roomId = roomId;
     socket.username = username;
 
-    rooms[roomId].players.push({ id: socket.id, username });
+    rooms[roomId].players.push({ id: socket.id, username, isAlive: true, role: null });
     rooms[roomId].scores[socket.id] = 0;
 
     socket.emit('join_success', { roomId, username });
     broadcastRoomState(roomId);
-    io.to(roomId).emit('system_message', `🏠 방이 생성되었습니다. 방 코드: [${roomId}]`);
   });
 
+  // 2. 방 참가
   socket.on('join_room', ({ roomId, username }) => {
     if (!roomId || !username) return;
-    if (!rooms[roomId]) return socket.emit('system_message', '⚠️ 존재하지 않는 방 코드입니다.');
-
     const room = rooms[roomId];
-    if (room.players.length >= 18) return socket.emit('system_message', '⚠️ 방이 가득 찼습니다.');
+    if (!room || room.gameStarted) return;
 
     socket.join(roomId);
     socket.roomId = roomId;
     socket.username = username;
 
-    room.players.push({ id: socket.id, username });
+    room.players.push({ id: socket.id, username, isAlive: true, role: null });
     room.scores[socket.id] = 0;
 
     socket.emit('join_success', { roomId, username });
     broadcastRoomState(roomId);
-    io.to(roomId).emit('system_message', `👋 [${username}]님이 입장하셨습니다.`);
   });
 
-  socket.on('update_settings', ({ roomId, settings }) => {
-    const room = rooms[roomId];
-    if (!room || room.host !== socket.id) return;
+  // 3. 방 나가기
+  socket.on('leave_room', () => handleLeave(socket));
 
-    if (settings.gameMode) room.gameMode = settings.gameMode;
-    if (settings.liarCategory) room.liarCategory = settings.liarCategory;
-    if (settings.shiritoriTime) room.shiritoriTime = Number(settings.shiritoriTime);
-    if (settings.shiritoriLen) room.shiritoriLen = Number(settings.shiritoriLen);
-    if (settings.targetScore) room.targetScore = Number(settings.targetScore);
-
-    if (room.gameMode === 'mafia' && settings.mafiaCount !== undefined) {
-      const totalPlayers = room.players.length;
-      const mCount = Number(settings.mafiaCount);
-      const pCount = Number(settings.policeCount);
-      const dCount = Number(settings.doctorCount);
-
-      const minMafia = Math.floor(totalPlayers / 6) || 1;
-      const maxPolice = Math.floor(totalPlayers / 3) || 1;
-      const maxDoctor = Math.floor(totalPlayers / 3) || 1;
-
-      if (mCount < 1 || pCount < 1 || dCount < 1) {
-        return socket.emit('system_message', '⚠️ 마피아/경찰/의사는 각각 최소 1명 이상이어야 합니다.');
-      }
-      if (mCount < minMafia) return socket.emit('system_message', `⚠️ 마피아는 최소 ${minMafia}명 이상이어야 합니다.`);
-      if (pCount > maxPolice) return socket.emit('system_message', `⚠️ 경찰은 최대 ${maxPolice}명까지 가능합니다.`);
-      if (dCount > maxDoctor) return socket.emit('system_message', `⚠️ 의사는 최대 ${maxDoctor}명까지 가능합니다.`);
-      if (mCount + pCount + dCount >= totalPlayers && totalPlayers > 0) {
-        return socket.emit('system_message', '⚠️ 특수 직책의 합은 총원보다 적어야 합니다.');
-      }
-
-      room.mafiaCount = mCount;
-      room.policeCount = pCount;
-      room.doctorCount = dCount;
-      room.mafiaDayTime = Number(settings.mafiaDayTime) || 60;
-    }
-
-    broadcastRoomState(roomId);
-  });
-
+  // 4. 게임 시작
   socket.on('start_game', ({ roomId }) => {
     const room = rooms[roomId];
     if (!room || room.host !== socket.id) return;
 
+    // A. 라이어 게임
     if (room.gameMode === 'liar') {
-      if (room.players.length < 2) return socket.emit('system_message', '⚠️ 라이어 게임은 최소 2명 이상 필요합니다.');
-      
+      if (room.players.length < 3) return;
       room.gameStarted = true;
-      room.rpsChoices = {};
       room.liarVotes = {};
-      room.liarState = 'RPS';
+      room.turnCount = 0;
+      room.currentTurnIndex = 0;
+      room.speakingOrder = [...room.players].sort(() => Math.random() - 0.5);
 
-      const words = LIAR_WORDS[room.liarCategory] || LIAR_WORDS['음식'];
+      const words = LIAR_WORDS[room.liarCategory];
       room.keyword = words[Math.floor(Math.random() * words.length)];
       const liarIndex = Math.floor(Math.random() * room.players.length);
       room.liarId = room.players[liarIndex].id;
 
       room.players.forEach((p) => {
         if (p.id === room.liarId) {
-          io.to(p.id).emit('system_message', `🕵️ 당신은 [라이어]입니다! 제시어를 모른 채 발언하세요.`);
+          io.to(p.id).emit('system_message', `🕵️ 당신은 [라이어]입니다!`);
         } else {
-          io.to(p.id).emit('system_message', `🔑 카테고리: [${room.liarCategory}] / 제시어: [${room.keyword}]`);
+          io.to(p.id).emit('system_message', `🔑 제시어: [${room.keyword}]`);
         }
       });
 
       io.to(roomId).emit('game_started', { mode: 'liar' });
-      io.to(roomId).emit('start_rps');
+      io.to(roomId).emit('update_turn', { currentTurnPlayer: room.speakingOrder[0].username });
     } 
-    else if (room.gameMode === 'mafia') {
-      if (room.players.length < 6) return socket.emit('system_message', '⚠️ 마피아 게임은 최소 6명 이상 필요합니다.');
-      room.gameStarted = true;
-      io.to(roomId).emit('game_started', { mode: 'mafia' });
-    }
+    // B. 끝말잇기
     else if (room.gameMode === 'shiritori') {
+      if (room.players.length < 2) return;
       room.gameStarted = true;
-      room.turnIndex = 0;
+      room.shiritoriTurnIndex = 0;
       room.currentWord = '사과';
-      io.to(roomId).emit('game_started', {
-        mode: 'shiritori',
-        currentWord: room.currentWord,
-        currentTurn: room.players[room.turnIndex].username
-      });
+      
+      io.to(roomId).emit('game_started', { mode: 'shiritori', currentWord: room.currentWord });
       startShiritoriTimer(roomId);
     }
+    // C. 초성 퀴즈
     else if (room.gameMode === 'choseong') {
+      if (room.players.length < 2) return;
       room.gameStarted = true;
       room.players.forEach(p => room.scores[p.id] = 0);
       io.to(roomId).emit('game_started', { mode: 'choseong' });
       nextChoseongQuestion(roomId);
     }
-  });
+    // D. 마피아 게임
+    else if (room.gameMode === 'mafia') {
+      if (room.players.length < 4) return socket.emit('system_message', '⚠️ 마피아 게임은 최소 4명 이상 필요합니다.');
+      room.gameStarted = true;
+      
+      // 역할 부여 (마피아 1, 의사 1, 경찰 1, 나머지 시민)
+      const roles = ['mafia', 'doctor', 'police'];
+      while (roles.length < room.players.length) roles.push('citizen');
+      roles.sort(() => Math.random() - 0.5);
 
-  socket.on('submit_rps', ({ roomId, choice }) => {
-    const room = rooms[roomId];
-    if (!room || room.liarState !== 'RPS') return;
+      room.players.forEach((p, idx) => {
+        p.isAlive = true;
+        p.role = roles[idx];
+        io.to(p.id).emit('system_message', `🎭 당신의 역할은 [${p.role}]입니다.`);
+      });
 
-    room.rpsChoices[socket.id] = choice;
-
-    if (Object.keys(room.rpsChoices).length === room.players.length) {
-      const choices = Object.values(room.rpsChoices);
-      const uniqueChoices = new Set(choices);
-
-      if (uniqueChoices.size === 1 || uniqueChoices.size === 3) {
-        room.rpsChoices = {};
-        io.to(roomId).emit('system_message', `🤝 가위바위보가 비겼습니다! 다시 제출해 주세요.`);
-        io.to(roomId).emit('start_rps');
-      } else {
-        let sortedPlayers = [...room.players].sort((a, b) => {
-          let cA = room.rpsChoices[a.id];
-          let cB = room.rpsChoices[b.id];
-          if (cA === cB) return Math.random() - 0.5;
-          if ((cA === '바위' && cB === '가위') || (cA === '가위' && cB === '보') || (cA === '보' && cB === '바위')) return -1;
-          return 1;
-        });
-
-        room.speakingOrder = sortedPlayers;
-        room.liarState = 'SPEAKING';
-
-        io.to(roomId).emit('rps_result', { orderList: sortedPlayers });
-        io.to(roomId).emit('start_liar_voting_phase', { players: room.players });
-      }
-    } else {
-      const currentCount = Object.keys(room.rpsChoices).length;
-      io.to(roomId).emit('system_message', `✌️ 가위바위보 진행 중... (${currentCount}/${room.players.length}명 제출)`);
+      startMafiaDay(roomId);
     }
   });
 
+  // 5. 채팅 및 턴 발언
+  socket.on('send_message', ({ roomId, message }) => {
+    const room = rooms[roomId];
+    if (!room) return;
+
+    const sender = room.players.find(p => p.id === socket.id);
+    if (!sender) return;
+
+    // 라이어 게임 턴 제어 (1턴 완료 후 투표)
+    if (room.gameStarted && room.gameMode === 'liar') {
+      const currentPlayer = room.speakingOrder[room.currentTurnIndex];
+      if (socket.id === currentPlayer.id) {
+        io.to(roomId).emit('receive_message', { username: sender.username, message });
+        room.turnCount++;
+        room.currentTurnIndex++;
+
+        if (room.turnCount >= room.players.length) {
+          io.to(roomId).emit('system_message', `\n✅ 모든 플레이어가 1턴 발언을 마쳤습니다. 라이어 투표를 시작합니다!`);
+          io.to(roomId).emit('start_liar_voting_phase', { players: room.players });
+        } else {
+          const nextPlayer = room.speakingOrder[room.currentTurnIndex];
+          io.to(roomId).emit('update_turn', { currentTurnPlayer: nextPlayer.username });
+        }
+        return;
+      } else {
+        return socket.emit('system_message', `⚠️ 지금은 [${currentPlayer.username}]님의 발언 순서입니다.`);
+      }
+    }
+
+    // 끝말잇기
+    if (room.gameStarted && room.gameMode === 'shiritori') {
+      const currentPlayer = room.players[room.shiritoriTurnIndex];
+      if (socket.id === currentPlayer.id) {
+        const lastChar = room.currentWord.slice(-1);
+        const firstChar = message.trim().charAt(0);
+
+        if (firstChar === lastChar && message.trim().length === room.shiritoriLen) {
+          clearInterval(room.shiritoriTimer);
+          room.currentWord = message.trim();
+          room.shiritoriTurnIndex = (room.shiritoriTurnIndex + 1) % room.players.length;
+
+          io.to(roomId).emit('shiritori_success', {
+            word: room.currentWord,
+            nextTurn: room.players[room.shiritoriTurnIndex].username,
+            sender: sender.username
+          });
+          startShiritoriTimer(roomId);
+          return;
+        }
+      }
+    }
+
+    // 초성 퀴즈
+    if (room.gameStarted && room.gameMode === 'choseong' && room.currentChoseongObj) {
+      if (message.trim() === room.currentChoseongObj.word) {
+        room.scores[socket.id] = (room.scores[socket.id] || 0) + 1;
+        io.to(roomId).emit('system_message', `🎉 [${sender.username}]님 정답! (${room.currentChoseongObj.word})`);
+
+        if (room.scores[socket.id] >= room.targetScore) {
+          room.gameStarted = false;
+          io.to(roomId).emit('game_over', { winner: sender.username, reason: '목표 점수 달성!' });
+        } else {
+          nextChoseongQuestion(roomId);
+        }
+        return;
+      }
+    }
+
+    // 일반 채팅 및 마피아 대화 (죽은 유저 제한)
+    if (room.gameMode === 'mafia' && !sender.isAlive) {
+      return socket.emit('system_message', '⚠️ 생존자만 대화할 수 있습니다.');
+    }
+
+    io.to(roomId).emit('receive_message', { username: sender.username, message });
+  });
+
+  // 6. 라이어 투표
   socket.on('submit_liar_vote', ({ roomId, targetId }) => {
     const room = rooms[roomId];
     if (!room || room.gameMode !== 'liar') return;
@@ -250,161 +251,134 @@ io.on('connection', (socket) => {
 
     if (Object.keys(room.liarVotes).length === room.players.length) {
       const voteCounts = {};
-      Object.values(room.liarVotes).forEach(tid => {
-        voteCounts[tid] = (voteCounts[tid] || 0) + 1;
-      });
+      Object.values(room.liarVotes).forEach(tid => { voteCounts[tid] = (voteCounts[tid] || 0) + 1; });
 
-      let maxVotes = 0;
-      let votedTargetId = null;
+      let maxVotes = 0, votedTargetId = null;
       for (const [tid, count] of Object.entries(voteCounts)) {
-        if (count > maxVotes) {
-          maxVotes = count;
-          votedTargetId = tid;
-        }
+        if (count > maxVotes) { maxVotes = count; votedTargetId = tid; }
       }
 
-      const votedPlayer = room.players.find(p => p.id === votedTargetId);
-      io.to(roomId).emit('system_message', `🗳️ 투표 완료! 최다 득표자: [${votedPlayer ? votedPlayer.username : '없음'}] (${maxVotes}표)`);
-
-      if (votedTargetId === room.liarId) {
-        room.liarState = 'LIAR_GUESS';
-        io.to(roomId).emit('system_message', `🎯 라이어를 찾았습니다! [${votedPlayer.username}]님은 라이어입니다.`);
-        io.to(room.liarId).emit('prompt_liar_guess');
-        io.to(roomId).emit('system_message', `🕵️ 라이어가 제시어를 입력 중입니다...`);
-      } else {
-        io.to(roomId).emit('system_message', `❌ [${votedPlayer.username}]님은 라이어가 아닙니다 (시민)!`);
-        io.to(roomId).emit('rps_result', { orderList: room.speakingOrder });
-        room.liarVotes = {};
-        io.to(roomId).emit('start_liar_voting_phase', { players: room.players });
-      }
-    }
-  });
-
-  socket.on('submit_liar_guess', ({ roomId, guessWord }) => {
-    const room = rooms[roomId];
-    if (!room || room.liarState !== 'LIAR_GUESS' || socket.id !== room.liarId) return;
-
-    room.gameStarted = false;
-    room.liarState = 'LOBBY';
-
-    if (guessWord.trim() === room.keyword) {
-      io.to(roomId).emit('game_over', { 
-        winner: `라이어 [${socket.username}]`, 
-        reason: `제시어 [${room.keyword}] 정답을 맞추어 라이어 역전 승리!` 
-      });
-    } else {
-      io.to(roomId).emit('game_over', { 
-        winner: `시민팀`, 
-        reason: `라이어가 제시어를 맞추지 못했습니다! (정답: ${room.keyword} / 입력: ${guessWord})` 
+      const isLiarCaught = votedTargetId === room.liarId;
+      room.gameStarted = false;
+      io.to(roomId).emit('game_over', {
+        winner: isLiarCaught ? '시민팀' : '라이어',
+        reason: isLiarCaught ? '라이어를 지목했습니다!' : '라이어 지목에 실패했습니다.'
       });
     }
   });
 
-  socket.on('send_message', ({ roomId, message }) => {
+  // 7. 마피아 낮 투표 및 밤 능력 사용
+  socket.on('mafia_vote_day', ({ roomId, targetId }) => {
     const room = rooms[roomId];
-    if (!room) return;
+    if (!room || room.phase !== 'DAY_VOTE') return;
+
+    room.dayVotes[socket.id] = targetId;
+    const alivePlayers = room.players.filter(p => p.isAlive);
+
+    if (Object.keys(room.dayVotes).length === alivePlayers.length) {
+      const voteCounts = {};
+      Object.values(room.dayVotes).forEach(tid => { voteCounts[tid] = (voteCounts[tid] || 0) + 1; });
+
+      let maxVotes = 0, executedId = null;
+      for (const [tid, count] of Object.entries(voteCounts)) {
+        if (count > maxVotes) { maxVotes = count; executedId = tid; }
+      }
+
+      const executedPlayer = room.players.find(p => p.id === executedId);
+      if (executedPlayer) {
+        executedPlayer.isAlive = false;
+        io.to(roomId).emit('system_message', `☠️ 투표로 인해 [${executedPlayer.username}]님이 처형되었습니다.`);
+      }
+
+      if (!checkMafiaWinCondition(roomId)) {
+        startMafiaNight(roomId);
+      }
+    }
+  });
+
+  socket.on('mafia_night_action', ({ roomId, targetId }) => {
+    const room = rooms[roomId];
+    if (!room || room.phase !== 'NIGHT') return;
 
     const sender = room.players.find(p => p.id === socket.id);
-    const username = sender ? sender.username : '익명';
+    if (!sender || !sender.isAlive) return;
 
-    if (room.gameStarted && room.gameMode === 'shiritori') {
-      const currentPlayer = room.players[room.turnIndex];
-      if (socket.id === currentPlayer.id) {
-        const lastChar = room.currentWord.slice(-1);
-        const firstChar = message.trim().charAt(0);
-
-        if (firstChar === lastChar && message.trim().length === room.shiritoriLen) {
-          clearInterval(room.shiritoriTimer);
-          room.currentWord = message.trim();
-          room.turnIndex = (room.turnIndex + 1) % room.players.length;
-
-          io.to(roomId).emit('shiritori_success', {
-            word: room.currentWord,
-            nextTurn: room.players[room.turnIndex].username,
-            sender: username
-          });
-          startShiritoriTimer(roomId);
-          return;
-        } else {
-          return socket.emit('system_message', `⚠️ 규칙에 맞는 ${room.shiritoriLen}자 단어를 입력하세요!`);
-        }
-      }
+    if (sender.role === 'mafia') room.nightActions.mafia = targetId;
+    if (sender.role === 'doctor') room.nightActions.doctor = targetId;
+    if (sender.role === 'police') {
+      const target = room.players.find(p => p.id === targetId);
+      socket.emit('system_message', `🔍 [${target.username}]님은 ${target.role === 'mafia' ? '마피아입니다!' : '마피아가 아닙니다.'}`);
+      room.nightActions.police = targetId;
     }
 
-    if (room.gameStarted && room.gameMode === 'choseong' && room.currentChoseongObj) {
-      if (message.trim() === room.currentChoseongObj.word) {
-        room.scores[socket.id] = (room.scores[socket.id] || 0) + 1;
-        io.to(roomId).emit('system_message', `🎉 [${username}]님 정답! (${room.currentChoseongObj.word})`);
+    const aliveMafia = room.players.filter(p => p.isAlive && p.role === 'mafia').length;
+    const aliveDoctor = room.players.filter(p => p.isAlive && p.role === 'doctor').length;
+    const alivePolice = room.players.filter(p => p.isAlive && p.role === 'police').length;
 
-        if (room.scores[socket.id] >= room.targetScore) {
-          room.gameStarted = false;
-          io.to(roomId).emit('game_over', { winner: username, reason: `목표 점수 ${room.targetScore}점 달성!` });
-        } else {
-          nextChoseongQuestion(roomId);
-        }
-        return;
-      }
-    }
+    let requiredActions = 0;
+    if (aliveMafia > 0) requiredActions++;
+    if (aliveDoctor > 0) requiredActions++;
+    if (alivePolice > 0) requiredActions++;
 
-    io.to(roomId).emit('receive_message', { username, message });
-  });
+    let currentActions = 0;
+    if (room.nightActions.mafia) currentActions++;
+    if (room.nightActions.doctor) currentActions++;
+    if (room.nightActions.police) currentActions++;
 
-  socket.on('disconnect', () => {
-    const roomId = socket.roomId;
-    if (roomId && rooms[roomId]) {
-      const room = rooms[roomId];
-      room.players = room.players.filter(p => p.id !== socket.id);
-      delete room.scores[socket.id];
-      delete room.rpsChoices[socket.id];
-
-      if (room.players.length === 0) {
-        if (room.shiritoriTimer) clearInterval(room.shiritoriTimer);
-        delete rooms[roomId];
-      } else {
-        if (room.host === socket.id) room.host = room.players[0].id;
-        broadcastRoomState(roomId);
-        io.to(roomId).emit('system_message', `🚪 [${socket.username}]님이 퇴장하셨습니다.`);
-      }
+    if (currentActions >= requiredActions) {
+      resolveMafiaNight(roomId);
     }
   });
+
+  socket.on('disconnect', () => handleLeave(socket));
 });
+
+function handleLeave(socket) {
+  const roomId = socket.roomId;
+  if (!roomId || !rooms[roomId]) return;
+
+  const room = rooms[roomId];
+  room.players = room.players.filter(p => p.id !== socket.id);
+  delete room.scores[socket.id];
+
+  if (room.players.length === 0) {
+    if (room.shiritoriTimer) clearInterval(room.shiritoriTimer);
+    delete rooms[roomId];
+  } else {
+    if (room.host === socket.id) room.host = room.players[0].id;
+    if (room.gameStarted && room.players.length < 2) {
+      room.gameStarted = false;
+      if (room.shiritoriTimer) clearInterval(room.shiritoriTimer);
+      io.to(roomId).emit('system_message', `⚠️ 인원 부족으로 게임이 중단되었습니다.`);
+    }
+    broadcastRoomState(roomId);
+  }
+  socket.leave(roomId);
+  socket.roomId = null;
+}
 
 function broadcastRoomState(roomId) {
   const room = rooms[roomId];
   if (!room) return;
   io.to(roomId).emit('update_room', {
-    roomId,
-    players: room.players,
-    host: room.host,
-    gameMode: room.gameMode,
-    gameStarted: room.gameStarted,
-    liarCategory: room.liarCategory,
-    mafiaDayTime: room.mafiaDayTime,
-    mafiaCount: room.mafiaCount,
-    policeCount: room.policeCount,
-    doctorCount: room.doctorCount,
-    shiritoriTime: room.shiritoriTime,
-    shiritoriLen: room.shiritoriLen,
-    targetScore: room.targetScore
+    roomId, players: room.players, host: room.host, gameMode: room.gameMode, gameStarted: room.gameStarted
   });
 }
 
 function startShiritoriTimer(roomId) {
   const room = rooms[roomId];
   let timeLeft = room.shiritoriTime;
-
   io.to(roomId).emit('timer_tick', { timeLeft });
   if (room.shiritoriTimer) clearInterval(room.shiritoriTimer);
 
   room.shiritoriTimer = setInterval(() => {
     timeLeft--;
     io.to(roomId).emit('timer_tick', { timeLeft });
-
     if (timeLeft <= 0) {
       clearInterval(room.shiritoriTimer);
-      const loser = room.players[room.turnIndex].username;
+      const loser = room.players[room.shiritoriTurnIndex].username;
       room.gameStarted = false;
-      io.to(roomId).emit('game_over', { loser, reason: '끝말잇기 시간 초과' });
+      io.to(roomId).emit('game_over', { loser, reason: '시간 초과' });
     }
   }, 1000);
 }
@@ -413,12 +387,68 @@ function nextChoseongQuestion(roomId) {
   const room = rooms[roomId];
   const randIndex = Math.floor(Math.random() * CHOSEONG_DATA.length);
   room.currentChoseongObj = CHOSEONG_DATA[randIndex];
-
   io.to(roomId).emit('choseong_question', {
-    choseong: room.currentChoseongObj.choseong,
-    scores: room.scores,
-    players: room.players
+    choseong: room.currentChoseongObj.choseong, scores: room.scores, players: room.players
   });
+}
+
+function startMafiaDay(roomId) {
+  const room = rooms[roomId];
+  room.phase = 'DAY_TALK';
+  room.dayVotes = {};
+  io.to(roomId).emit('system_message', `☀️ 낮이 되었습니다. 자유롭게 토론하세요.`);
+  
+  setTimeout(() => {
+    room.phase = 'DAY_VOTE';
+    io.to(roomId).emit('system_message', `🗳️ 토론 종료! 마피아로 의심되는 사람에게 투표하세요.`);
+    io.to(roomId).emit('start_mafia_vote', { alivePlayers: room.players.filter(p => p.isAlive) });
+  }, 15000);
+}
+
+function startMafiaNight(roomId) {
+  const room = rooms[roomId];
+  room.phase = 'NIGHT';
+  room.nightActions = { mafia: null, doctor: null, police: null };
+  io.to(roomId).emit('system_message', `🌙 밤이 되었습니다. 각 특수 직업은 능력을 사용하세요.`);
+}
+
+function resolveMafiaNight(roomId) {
+  const room = rooms[roomId];
+  const killedId = room.nightActions.mafia;
+  const savedId = room.nightActions.doctor;
+
+  if (killedId && killedId !== savedId) {
+    const killedPlayer = room.players.find(p => p.id === killedId);
+    if (killedPlayer) {
+      killedPlayer.isAlive = false;
+      io.to(roomId).emit('system_message', `☠️ 밤 사이에 [${killedPlayer.username}]님이 마피아에게 습격당했습니다.`);
+    }
+  } else {
+    io.to(roomId).emit('system_message', `🛡️ 의사의 치료로 밤 사이에 아무도 희생되지 않았습니다.`);
+  }
+
+  if (!checkMafiaWinCondition(roomId)) {
+    startMafiaDay(roomId);
+  }
+}
+
+function checkMafiaWinCondition(roomId) {
+  const room = rooms[roomId];
+  const alivePlayers = room.players.filter(p => p.isAlive);
+  const mafiaCount = alivePlayers.filter(p => p.role === 'mafia').length;
+  const citizenCount = alivePlayers.length - mafiaCount;
+
+  if (mafiaCount === 0) {
+    room.gameStarted = false;
+    io.to(roomId).emit('game_over', { winner: '시민팀', reason: '모든 마피아를 제거했습니다!' });
+    return true;
+  }
+  if (mafiaCount >= citizenCount) {
+    room.gameStarted = false;
+    io.to(roomId).emit('game_over', { winner: '마피아팀', reason: '마피아 수가 시민 수와 같거나 많아졌습니다!' });
+    return true;
+  }
+  return false;
 }
 
 server.listen(3000, () => console.log('서버 실행 중: http://localhost:3000'));
