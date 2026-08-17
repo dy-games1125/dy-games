@@ -10,16 +10,22 @@ app.use(express.static('public'));
 
 const rooms = {};
 
-// 1. 라이어 게임 카테고리별 단어장
+function generateRoomCode() {
+  let code;
+  do {
+    code = Math.floor(100000 + Math.random() * 900000).toString();
+  } while (rooms[code]);
+  return code;
+}
+
 const LIAR_WORDS = {
   '음식': ['떡볶이', '김치찌개', '돈까스', '짜장면', '마라탕', '삼겹살', '초밥', '치킨', '피자', '햄버거', '파스타', '족발', '부대찌개', '비빔밥', '칼국수', '계란말이', '감자탕', '샤브샤브', '순대국', '떡갈비', '우동', '라멘'],
   '동물': ['호랑이', '사자', '기린', '코끼리', '판다', '펭귄', '돌고래', '강아지', '고양이', '토끼', '다람쥐', '독수리', '올빼미', '캥거루', '알파카', '하마', '악어', '사슴', '치타', '카멜레온', '북극곰', '바다표범'],
   '직업': ['소방관', '경찰관', '의사', '교사', '요리사', '비행기조종사', '판사', '화가', '가수', '운동선수', '프로그래머', '건축가', '기자', '변호사', '수의사', '우주비행사', '마술사', '사진작가', '미용사', '과학자', '외교관'],
   '장소': ['놀이공원', '영화관', '도서관', '해수욕장', '미술관', '박물관', '공항', '지하철역', '캠핑장', '수영장', '동물원', '식물원', '백화점', '미용실', '편의점', '식당', '카페', '학교', '병원', '헬스장'],
-  '전자제품': ['스마트폰', '노트북', '태블릿', '스마트워치', '무선이어폰', '냉장고', '세탁기', '청소기', '에어컨', 'TV', '전자레인지', '에어프라이어', '식기세척기', '헤어드라이어', '게임기', '카메라', '빔프로젝터', '공기청정기']
+  '전자제품': ['스마트폰', '노트북', '태블릿', '스마트워치', '무선이어폰', '냉장고', '세탁기', '청소기', '에어컨', 'TV', '전자레인지', '에어프라이어', '식기세척기', '헤어드라이어', '게임기', '카메라', '빔프로젝트', '공기청정기']
 };
 
-// 2. 초성 퀴즈 데이터베이스 (100개)
 const CHOSEONG_DATA = [
   { choseong: 'ㄱㅇ', word: '고양이' }, { choseong: 'ㄱㅇ', word: '강아지' }, { choseong: 'ㄴㅂ', word: '나비' }, { choseong: 'ㅂㄷ', word: '바다' },
   { choseong: 'ㅅㄱ', word: '사과' }, { choseong: 'ㅎㄴ', word: '하늘' }, { choseong: 'ㅋㅍ', word: '커피' }, { choseong: 'ㅋㅍ', word: '키보드' },
@@ -49,61 +55,67 @@ const CHOSEONG_DATA = [
 ];
 
 io.on('connection', (socket) => {
-  // 1. 방 입장 (닉네임 + 방코드)
-  socket.on('join_room', ({ roomId, username }) => {
-    if (!roomId || !username) return;
+  socket.on('create_room', ({ username }) => {
+    if (!username) return;
+    const roomId = generateRoomCode();
+
+    rooms[roomId] = {
+      players: [],
+      host: socket.id,
+      gameMode: 'liar',
+      gameStarted: false,
+      liarCategory: '음식',
+      keyword: '',
+      liarId: null,
+      rpsChoices: {},
+      liarVotes: {},
+      speakingOrder: [],
+      liarState: 'LOBBY',
+      mafiaDayTime: 60,
+      mafiaCount: 1,
+      policeCount: 1,
+      doctorCount: 1,
+      shiritoriTime: 10,
+      shiritoriLen: 2,
+      currentWord: '',
+      turnIndex: 0,
+      shiritoriTimer: null,
+      targetScore: 6,
+      scores: {},
+      currentChoseongObj: null
+    };
 
     socket.join(roomId);
     socket.roomId = roomId;
     socket.username = username;
 
-    if (!rooms[roomId]) {
-      rooms[roomId] = {
-        players: [],
-        host: socket.id,
-        gameMode: 'liar',
-        gameStarted: false,
-        // 라이어 게임 설정
-        liarCategory: '음식',
-        keyword: '',
-        liarId: null,
-        rpsChoices: {}, // 가위바위보 결과 저장
-        // 마피아 게임 설정
-        mafiaDayTime: 60,
-        mafiaCount: 1,
-        policeCount: 1,
-        doctorCount: 1,
-        // 끝말잇기 설정
-        shiritoriTime: 10,
-        shiritoriLen: 2,
-        currentWord: '',
-        turnIndex: 0,
-        shiritoriTimer: null,
-        // 초성 퀴즈 설정
-        targetScore: 6,
-        scores: {},
-        currentChoseongObj: null
-      };
-    }
+    rooms[roomId].players.push({ id: socket.id, username });
+    rooms[roomId].scores[socket.id] = 0;
+
+    socket.emit('join_success', { roomId, username });
+    broadcastRoomState(roomId);
+    io.to(roomId).emit('system_message', `🏠 방이 생성되었습니다. 방 코드: [${roomId}]`);
+  });
+
+  socket.on('join_room', ({ roomId, username }) => {
+    if (!roomId || !username) return;
+    if (!rooms[roomId]) return socket.emit('system_message', '⚠️ 존재하지 않는 방 코드입니다.');
 
     const room = rooms[roomId];
+    if (room.players.length >= 18) return socket.emit('system_message', '⚠️ 방이 가득 찼습니다.');
 
-    if (room.players.length >= 18) {
-      socket.emit('system_message', '⚠️ 방이 가득 찼습니다. (최대 18명)');
-      socket.leave(roomId);
-      return;
-    }
+    socket.join(roomId);
+    socket.roomId = roomId;
+    socket.username = username;
 
     room.players.push({ id: socket.id, username });
     room.scores[socket.id] = 0;
 
     socket.emit('join_success', { roomId, username });
-
     broadcastRoomState(roomId);
     io.to(roomId).emit('system_message', `👋 [${username}]님이 입장하셨습니다.`);
   });
 
-  // 2. 방 설정 업데이트
   socket.on('update_settings', ({ roomId, settings }) => {
     const room = rooms[roomId];
     if (!room || room.host !== socket.id) return;
@@ -131,7 +143,7 @@ io.on('connection', (socket) => {
       if (pCount > maxPolice) return socket.emit('system_message', `⚠️ 경찰은 최대 ${maxPolice}명까지 가능합니다.`);
       if (dCount > maxDoctor) return socket.emit('system_message', `⚠️ 의사는 최대 ${maxDoctor}명까지 가능합니다.`);
       if (mCount + pCount + dCount >= totalPlayers && totalPlayers > 0) {
-        return socket.emit('system_message', '⚠️ 특수 직책의 합은 총원보다 적어야 합니다 (시민 1명 이상 필요).');
+        return socket.emit('system_message', '⚠️ 특수 직책의 합은 총원보다 적어야 합니다.');
       }
 
       room.mafiaCount = mCount;
@@ -143,7 +155,6 @@ io.on('connection', (socket) => {
     broadcastRoomState(roomId);
   });
 
-  // 3. 게임 시작
   socket.on('start_game', ({ roomId }) => {
     const room = rooms[roomId];
     if (!room || room.host !== socket.id) return;
@@ -152,6 +163,10 @@ io.on('connection', (socket) => {
       if (room.players.length < 2) return socket.emit('system_message', '⚠️ 라이어 게임은 최소 2명 이상 필요합니다.');
       
       room.gameStarted = true;
+      room.rpsChoices = {};
+      room.liarVotes = {};
+      room.liarState = 'RPS';
+
       const words = LIAR_WORDS[room.liarCategory] || LIAR_WORDS['음식'];
       room.keyword = words[Math.floor(Math.random() * words.length)];
       const liarIndex = Math.floor(Math.random() * room.players.length);
@@ -166,7 +181,7 @@ io.on('connection', (socket) => {
       });
 
       io.to(roomId).emit('game_started', { mode: 'liar' });
-      io.to(roomId).emit('start_rps'); // 가위바위보 순서 정하기 시작!
+      io.to(roomId).emit('start_rps');
     } 
     else if (room.gameMode === 'mafia') {
       if (room.players.length < 6) return socket.emit('system_message', '⚠️ 마피아 게임은 최소 6명 이상 필요합니다.');
@@ -192,31 +207,99 @@ io.on('connection', (socket) => {
     }
   });
 
-  // 4. 가위바위보(RPS) 제출 및 순서 정하기
   socket.on('submit_rps', ({ roomId, choice }) => {
     const room = rooms[roomId];
-    if (!room) return;
+    if (!room || room.liarState !== 'RPS') return;
 
-    room.rpsChoices[socket.id] = { username: socket.username, choice };
+    room.rpsChoices[socket.id] = choice;
 
-    // 모두 제출 완료 시 순서 계산
     if (Object.keys(room.rpsChoices).length === room.players.length) {
-      const results = Object.values(room.rpsChoices);
-      
-      // 순서 무작위 셔플 후 발언 순서 배정
-      const shuffled = [...room.players].sort(() => Math.random() - 0.5);
-      const orderNames = shuffled.map(p => p.username).join(' ➡️ ');
+      const choices = Object.values(room.rpsChoices);
+      const uniqueChoices = new Set(choices);
 
-      io.to(roomId).emit('rps_result', {
-        results,
-        orderText: `🎲 가위바위보 완료! 발언 순서: ${orderNames}`
-      });
+      if (uniqueChoices.size === 1 || uniqueChoices.size === 3) {
+        room.rpsChoices = {};
+        io.to(roomId).emit('system_message', `🤝 가위바위보가 비겼습니다! 다시 제출해 주세요.`);
+        io.to(roomId).emit('start_rps');
+      } else {
+        let sortedPlayers = [...room.players].sort((a, b) => {
+          let cA = room.rpsChoices[a.id];
+          let cB = room.rpsChoices[b.id];
+          if (cA === cB) return Math.random() - 0.5;
+          if ((cA === '바위' && cB === '가위') || (cA === '가위' && cB === '보') || (cA === '보' && cB === '바위')) return -1;
+          return 1;
+        });
 
-      room.rpsChoices = {}; // 초기화
+        room.speakingOrder = sortedPlayers;
+        room.liarState = 'SPEAKING';
+
+        io.to(roomId).emit('rps_result', { orderList: sortedPlayers });
+        io.to(roomId).emit('start_liar_voting_phase', { players: room.players });
+      }
+    } else {
+      const currentCount = Object.keys(room.rpsChoices).length;
+      io.to(roomId).emit('system_message', `✌️ 가위바위보 진행 중... (${currentCount}/${room.players.length}명 제출)`);
     }
   });
 
-  // 5. 채팅 및 정답
+  socket.on('submit_liar_vote', ({ roomId, targetId }) => {
+    const room = rooms[roomId];
+    if (!room || room.gameMode !== 'liar') return;
+
+    room.liarVotes[socket.id] = targetId;
+
+    if (Object.keys(room.liarVotes).length === room.players.length) {
+      const voteCounts = {};
+      Object.values(room.liarVotes).forEach(tid => {
+        voteCounts[tid] = (voteCounts[tid] || 0) + 1;
+      });
+
+      let maxVotes = 0;
+      let votedTargetId = null;
+      for (const [tid, count] of Object.entries(voteCounts)) {
+        if (count > maxVotes) {
+          maxVotes = count;
+          votedTargetId = tid;
+        }
+      }
+
+      const votedPlayer = room.players.find(p => p.id === votedTargetId);
+      io.to(roomId).emit('system_message', `🗳️ 투표 완료! 최다 득표자: [${votedPlayer ? votedPlayer.username : '없음'}] (${maxVotes}표)`);
+
+      if (votedTargetId === room.liarId) {
+        room.liarState = 'LIAR_GUESS';
+        io.to(roomId).emit('system_message', `🎯 라이어를 찾았습니다! [${votedPlayer.username}]님은 라이어입니다.`);
+        io.to(room.liarId).emit('prompt_liar_guess');
+        io.to(roomId).emit('system_message', `🕵️ 라이어가 제시어를 입력 중입니다...`);
+      } else {
+        io.to(roomId).emit('system_message', `❌ [${votedPlayer.username}]님은 라이어가 아닙니다 (시민)!`);
+        io.to(roomId).emit('rps_result', { orderList: room.speakingOrder });
+        room.liarVotes = {};
+        io.to(roomId).emit('start_liar_voting_phase', { players: room.players });
+      }
+    }
+  });
+
+  socket.on('submit_liar_guess', ({ roomId, guessWord }) => {
+    const room = rooms[roomId];
+    if (!room || room.liarState !== 'LIAR_GUESS' || socket.id !== room.liarId) return;
+
+    room.gameStarted = false;
+    room.liarState = 'LOBBY';
+
+    if (guessWord.trim() === room.keyword) {
+      io.to(roomId).emit('game_over', { 
+        winner: `라이어 [${socket.username}]`, 
+        reason: `제시어 [${room.keyword}] 정답을 맞추어 라이어 역전 승리!` 
+      });
+    } else {
+      io.to(roomId).emit('game_over', { 
+        winner: `시민팀`, 
+        reason: `라이어가 제시어를 맞추지 못했습니다! (정답: ${room.keyword} / 입력: ${guessWord})` 
+      });
+    }
+  });
+
   socket.on('send_message', ({ roomId, message }) => {
     const room = rooms[roomId];
     if (!room) return;
@@ -255,7 +338,7 @@ io.on('connection', (socket) => {
 
         if (room.scores[socket.id] >= room.targetScore) {
           room.gameStarted = false;
-          io.to(roomId).emit('game_over', { winner: username });
+          io.to(roomId).emit('game_over', { winner: username, reason: `목표 점수 ${room.targetScore}점 달성!` });
         } else {
           nextChoseongQuestion(roomId);
         }
@@ -321,7 +404,7 @@ function startShiritoriTimer(roomId) {
       clearInterval(room.shiritoriTimer);
       const loser = room.players[room.turnIndex].username;
       room.gameStarted = false;
-      io.to(roomId).emit('game_over', { loser, reason: '시간 초과' });
+      io.to(roomId).emit('game_over', { loser, reason: '끝말잇기 시간 초과' });
     }
   }, 1000);
 }
@@ -338,4 +421,4 @@ function nextChoseongQuestion(roomId) {
   });
 }
 
-server.listen(3000, () => console.log('서버 실행: http://localhost:3000'));
+server.listen(3000, () => console.log('서버 실행 중: http://localhost:3000'));
