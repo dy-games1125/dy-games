@@ -7,7 +7,6 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 
-// public 폴더 안의 파일들을 정적 파일로 서빙하도록 경로 수정
 app.use(express.static(path.join(__dirname, 'public')));
 
 const rooms = {};
@@ -37,7 +36,10 @@ io.on('connection', (socket) => {
         choseongTargetScore: 15
       },
       players: [{ id: socket.id, username, isDead: false }],
-      rpsChoices: {}
+      rpsChoices: {},
+      // 끝말잇기용 데이터 관리 필드 추가
+      usedWords: [],
+      lastWord: ''
     };
 
     socket.join(roomId);
@@ -113,6 +115,8 @@ io.on('connection', (socket) => {
     if (room && room.host === socket.id) {
       room.gameStarted = true;
       room.rpsChoices = {};
+      room.usedWords = [];
+      room.lastWord = '';
       io.to(roomId).emit('update_room', room);
       io.to(roomId).emit('start_game_ui', { gameMode: room.gameMode });
       io.to(roomId).emit('system_message', `게임(${room.gameMode.toUpperCase()})이 시작되었습니다!`);
@@ -166,11 +170,39 @@ io.on('connection', (socket) => {
     }
   });
 
+  // 끝말잇기 단어 입력 검증 로직 (최소 글자수, 중복 단어, 앞글자 일치 확인)
   socket.on('game_input_word', ({ roomId, word }) => {
     const room = rooms[roomId];
     if (!room) return;
 
-    io.to(roomId).emit('update_game_word', { username: currentUsername, word });
+    const trimmedWord = word.trim();
+    const minLen = room.options.shiritoriMinLen || 2;
+
+    // 1. 최소 글자수 검증
+    if (trimmedWord.length < minLen) {
+      return socket.emit('system_message', `[오류] 단어는 ${minLen}글자 이상이어야 합니다.`);
+    }
+
+    // 2. 이미 사용된 단어인지 중복 검증
+    if (room.usedWords.includes(trimmedWord)) {
+      return socket.emit('system_message', `[오류] 이미 사용된 단어입니다: "${trimmedWord}"`);
+    }
+
+    // 3. 끝말잇기 규칙 검증 (첫 단어가 아닐 경우)
+    if (room.lastWord.length > 0) {
+      const lastChar = room.lastWord.slice(-1);
+      const firstChar = trimmedWord.charAt(0);
+      if (lastChar !== firstChar) {
+        return socket.emit('system_message', `[오류] "${lastChar}(으)로 시작하는 단어를 입력해야 합니다.`);
+      }
+    }
+
+    // 검증 통과 시 처리
+    room.usedWords.push(trimmedWord);
+    room.lastWord = trimmedWord;
+
+    io.to(roomId).emit('update_game_word', { username: currentUsername, word: trimmedWord });
+    io.to(roomId).emit('system_message', `[끝말잇기] ${currentUsername}님 입력 성공: ${trimmedWord} (사용된 단어: ${room.usedWords.join(', ')})`);
   });
 });
 
