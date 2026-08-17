@@ -1,12 +1,14 @@
 const http = require('http');
 const express = require('express');
+const path = require('path');
 const { Server } = require('socket.io');
 
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 
-app.use(express.static(__dirname));
+// public 폴더 안의 파일들을 정적 파일로 서빙하도록 경로 수정
+app.use(express.static(path.join(__dirname, 'public')));
 
 const rooms = {};
 
