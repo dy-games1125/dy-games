@@ -37,9 +37,9 @@ io.on('connection', (socket) => {
       },
       players: [{ id: socket.id, username, isDead: false }],
       rpsChoices: {},
-      // 끝말잇기용 데이터 관리 필드 추가
       usedWords: [],
-      lastWord: ''
+      lastWord: '',
+      turnIndex: 0 // 턴 순서 관리 필드 추가
     };
 
     socket.join(roomId);
@@ -117,6 +117,7 @@ io.on('connection', (socket) => {
       room.rpsChoices = {};
       room.usedWords = [];
       room.lastWord = '';
+      room.turnIndex = 0;
       io.to(roomId).emit('update_room', room);
       io.to(roomId).emit('start_game_ui', { gameMode: room.gameMode });
       io.to(roomId).emit('system_message', `게임(${room.gameMode.toUpperCase()})이 시작되었습니다!`);
@@ -154,26 +155,57 @@ io.on('connection', (socket) => {
     }
   });
 
+  // 가위바위보 비김 처리 및 승자 결정 로직 수정
   socket.on('play_rps', ({ roomId, choice }) => {
     const room = rooms[roomId];
     if (!room) return;
 
     room.rpsChoices[socket.id] = { username: currentUsername, choice };
 
+    // 모든 플레이어가 가위바위보를 냈을 때
     if (Object.keys(room.rpsChoices).length === room.players.length) {
-      const playerIds = Object.keys(room.rpsChoices);
-      const randomWinnerKey = playerIds[Math.floor(Math.random() * playerIds.length)];
-      const winnerName = room.rpsChoices[randomWinnerKey].username;
+      const choicesArr = Object.values(room.rpsChoices);
+      const uniqueChoices = [...new Set(choicesArr.map(item => item.choice))];
 
-      io.to(roomId).emit('rps_result', { winner: winnerName });
-      io.to(roomId).emit('system_message', `가위바위보 결과! 승리자: ${winnerName}님`);
+      // 모두 같은 것을 냈거나(3개 다 나오거나), 모두 비긴 경우 재경기 처리
+      if (uniqueChoices.length === 3 || uniqueChoices.length === 1) {
+        room.rpsChoices = {};
+        io.to(roomId).emit('rps_draw', { message: '가위바위보가 비겼습니다! 다시 선택해주세요.' });
+        return;
+      }
+
+      // 승자 판별 로직 (가위(scissors) > 보(paper) > 바위(rock) > 가위(scissors))
+      let winningChoice = '';
+      if (uniqueChoices.includes('scissors') && uniqueChoices.includes('paper')) winningChoice = 'scissors';
+      else if (uniqueChoices.includes('paper') && uniqueChoices.includes('rock')) winningChoice = 'paper';
+      else if (uniqueChoices.includes('rock') && uniqueChoices.includes('scissors')) winningChoice = 'rock';
+
+      const winners = room.players.filter(p => room.rpsChoices[p.id] && room.rpsChoices[p.id].choice === winningChoice);
+
+      if (winners.length === 1) {
+        // 단독 승자 발생
+        const winner = winners[0];
+        room.turnIndex = room.players.findIndex(p => p.id === winner.id);
+        
+        io.to(roomId).emit('rps_result', { winner: winner.username, nextTurnId: winner.id });
+        io.to(roomId).emit('system_message', `가위바위보 승리자: ${winner.username}님! 첫 번째 순서로 시작합니다.`);
+      } else {
+        // 여러 명이 이긴 경우 그들 중에서 랜덤 한 명 선택
+        room.rpsChoices = {};
+        io.to(roomId).emit('rps_draw', { message: '승자가 여러 명입니다! 다시 가위바위보를 진행합니다.' });
+      }
     }
   });
 
-  // 끝말잇기 단어 입력 검증 로직 (최소 글자수, 중복 단어, 앞글자 일치 확인)
+  // 순서 강제 및 단어 공유/검증 로직 수정
   socket.on('game_input_word', ({ roomId, word }) => {
     const room = rooms[roomId];
     if (!room) return;
+
+    const currentPlayer = room.players[room.turnIndex];
+    if (!currentPlayer || currentPlayer.id !== socket.id) {
+      return socket.emit('system_message', '[오류] 현재 차례가 아닙니다!');
+    }
 
     const trimmedWord = word.trim();
     const minLen = room.options.shiritoriMinLen || 2;
@@ -183,26 +215,37 @@ io.on('connection', (socket) => {
       return socket.emit('system_message', `[오류] 단어는 ${minLen}글자 이상이어야 합니다.`);
     }
 
-    // 2. 이미 사용된 단어인지 중복 검증
+    // 2. 중복 단어 검증
     if (room.usedWords.includes(trimmedWord)) {
       return socket.emit('system_message', `[오류] 이미 사용된 단어입니다: "${trimmedWord}"`);
     }
 
-    // 3. 끝말잇기 규칙 검증 (첫 단어가 아닐 경우)
+    // 3. 끝말잇기 앞글자 일치 검증
     if (room.lastWord.length > 0) {
       const lastChar = room.lastWord.slice(-1);
       const firstChar = trimmedWord.charAt(0);
       if (lastChar !== firstChar) {
-        return socket.emit('system_message', `[오류] "${lastChar}(으)로 시작하는 단어를 입력해야 합니다.`);
+        return socket.emit('system_message', `[오류] "${lastChar}"(으)로 시작하는 단어를 입력해야 합니다.`);
       }
     }
 
-    // 검증 통과 시 처리
+    // 검증 통과 후 상태 갱신
     room.usedWords.push(trimmedWord);
     room.lastWord = trimmedWord;
 
-    io.to(roomId).emit('update_game_word', { username: currentUsername, word: trimmedWord });
-    io.to(roomId).emit('system_message', `[끝말잇기] ${currentUsername}님 입력 성공: ${trimmedWord} (사용된 단어: ${room.usedWords.join(', ')})`);
+    // 다음 차례로 턴 넘기기
+    room.turnIndex = (room.turnIndex + 1) % room.players.length;
+    const nextPlayer = room.players[room.turnIndex];
+
+    // 모든 참가자에게 단어와 다음 턴 정보 브로드캐스팅 (단어 공유 안되던 문제 해결)
+    io.to(roomId).emit('update_game_word', { 
+      username: currentUsername, 
+      word: trimmedWord, 
+      nextTurnId: nextPlayer.id, 
+      nextTurnName: nextPlayer.username,
+      usedWords: room.usedWords 
+    });
+    io.to(roomId).emit('system_message', `[진행] ${currentUsername}님 입력: ${trimmedWord} -> 다음 차례: ${nextPlayer.username}님`);
   });
 });
 
