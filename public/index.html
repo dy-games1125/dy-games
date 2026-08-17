@@ -18,21 +18,25 @@
       padding-top: 20px;
     }
     .container {
-      width: 420px;
+      width: 440px;
     }
     .card {
       background-color: #42281d;
       border-radius: 12px;
-      padding: 15px;
+      padding: 16px;
       margin-bottom: 15px;
       border: 1px solid #5a3829;
     }
-    .login-sec {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
+    .form-group {
+      margin-bottom: 12px;
     }
-    .login-sec input {
+    .form-group label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+      color: #ffca28;
+    }
+    .form-group input {
       width: 100%;
       padding: 8px;
     }
@@ -61,6 +65,24 @@
     }
     .btn-main:hover {
       background: #008f5f;
+    }
+    .rps-sec {
+      background: #331f16;
+      border: 1px dashed #ffca28;
+      border-radius: 8px;
+      padding: 10px;
+      margin-top: 10px;
+      text-align: center;
+    }
+    .rps-btns button {
+      background: #ff9800;
+      border: none;
+      color: white;
+      padding: 6px 12px;
+      margin: 4px;
+      border-radius: 6px;
+      font-weight: bold;
+      cursor: pointer;
     }
     #chat-box {
       height: 220px;
@@ -102,34 +124,33 @@
 
 <div class="container">
 
-  <!-- 1. 로그인 / 방 입장 카드 -->
+  <!-- 1. 입장 (닉네임 + 방 코드) -->
   <div class="card" id="login-card">
     <h2 style="text-align: center; margin-bottom: 15px; color: #ffca28;">🎮 미니게임 천국</h2>
-    <div class="login-sec">
-      <label>닉네임:
-        <input type="text" id="input-username" placeholder="닉네임을 입력하세요">
-      </label>
-      <label>방 코드:
-        <input type="text" id="input-roomid" placeholder="방 코드 (예: 1004)">
-      </label>
-      <button class="btn-main" onclick="joinRoom()">입장하기</button>
+    <div class="form-group">
+      <label>닉네임</label>
+      <input type="text" id="input-username" placeholder="사용할 닉네임 입력">
     </div>
+    <div class="form-group">
+      <label>방 코드</label>
+      <input type="text" id="input-roomid" placeholder="입장 또는 생성할 방 코드 (예: 1004)">
+    </div>
+    <button class="btn-main" onclick="joinRoom()">방 입장하기 / 만들기</button>
   </div>
 
-  <!-- 2. 게임 방 카드 (입장 후 표시) -->
+  <!-- 2. 게임 대기실 -->
   <div class="card" id="room-card" style="display: none;">
     <div style="display:flex; justify-content:space-between; font-weight: bold;">
       <span>🏠 방 코드: <span id="display-room-id" style="color:#ffca28;">-</span></span>
       <span>👑 방장: <span id="host-name">-</span></span>
     </div>
     <div style="margin-top: 5px; font-size: 13px;">
-      👥 접속 인원: <span id="player-count">0</span>/18
+      👥 인원: <span id="player-count">0</span>/18
     </div>
     <div class="player-list" id="player-list">명단 불러오는 중...</div>
 
     <hr style="border-color:#5a3829; margin: 12px 0;">
 
-    <!-- 방 설정 옵션 -->
     <div class="opt-row">
       🎮 게임 모드: 
       <select id="game-mode" onchange="onModeChange()">
@@ -185,9 +206,20 @@
     <button id="btn-start" class="btn-main" onclick="startGame()">🚀 게임 시작</button>
   </div>
 
-  <!-- 3. 채팅 및 진행 창 -->
+  <!-- 3. 게임 실행 / 가위바위보 / 채팅 -->
   <div class="card" id="chat-card" style="display: none;">
     <div id="game-status" style="text-align:center; font-weight:bold; margin-bottom:8px; color:#4deaea;">⏳ 대기 중</div>
+    
+    <!-- 가위바위보 순서 정하기 UI -->
+    <div id="rps-sec" class="rps-sec" style="display: none;">
+      <p style="margin-bottom: 5px; font-weight: bold; color: #ffca28;">✌️✊🖐️ 순서 정하기 가위바위보!</p>
+      <div class="rps-btns">
+        <button onclick="submitRPS('가위')">✌️ 가위</button>
+        <button onclick="submitRPS('바위')">✊ 바위</button>
+        <button onclick="submitRPS('보')">🖐️ 보</button>
+      </div>
+    </div>
+
     <div id="timer" style="text-align:center; color:#ff4d4d; font-weight:bold; margin-bottom: 5px;"></div>
     <div id="chat-box"></div>
     <div class="chat-input-sec">
@@ -209,7 +241,7 @@
     const roomId = document.getElementById('input-roomid').value.trim();
 
     if (!username || !roomId) {
-      alert("닉네임과 방 코드를 모두 입력해 주세요!");
+      alert("닉네임과 방 코드를 모두 입력하세요!");
       return;
     }
 
@@ -257,6 +289,11 @@
     socket.emit('start_game', { roomId: currentRoomId });
   }
 
+  function submitRPS(choice) {
+    socket.emit('submit_rps', { roomId: currentRoomId, choice });
+    document.getElementById('rps-sec').style.display = 'none';
+  }
+
   function sendMessage() {
     const input = document.getElementById('chat-input');
     if (!input.value.trim()) return;
@@ -272,15 +309,23 @@
       document.getElementById('host-name').innerText = hostPlayer.username;
     }
 
-    // 방장이 아닌 경우 컨트롤 비활성화 처리
     const isHost = (socket.id === data.host);
     document.getElementById('btn-start').style.display = isHost ? 'block' : 'none';
     document.getElementById('game-mode').disabled = !isHost;
     document.getElementById('liar-category').disabled = !isHost;
 
-    // 플레이어 목록 표시
     const pNames = data.players.map(p => p.username + (p.id === data.host ? '👑' : '')).join(', ');
     document.getElementById('player-list').innerText = "접속자: " + pNames;
+  });
+
+  socket.on('start_rps', () => {
+    document.getElementById('rps-sec').style.display = 'block';
+  });
+
+  socket.on('rps_result', ({ orderText }) => {
+    const box = document.getElementById('chat-box');
+    box.innerHTML += `<div style="color:#ffca28; font-weight:bold;">${orderText}</div>`;
+    box.scrollTop = box.scrollHeight;
   });
 
   socket.on('receive_message', ({ username, message }) => {
