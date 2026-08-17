@@ -14,13 +14,12 @@
     input, select { background: #fffde8; border: 1px solid #ccc; padding: 6px 10px; border-radius: 6px; color: #333; }
     .row { margin: 10px 0; display: flex; align-items: center; gap: 8px; }
     .chat-box { background: #1e130e; height: 180px; border-radius: 8px; padding: 10px; overflow-y: auto; color: #ffab76; font-size: 14px; }
-    .hidden { display: none; }
   </style>
 </head>
 <body>
 
   <div id="app">
-    <!-- 로비 창 -->
+    <!-- 로그인 화면 -->
     <div id="loginView" class="card">
       <h2>🎮 미니게임 천국</h2>
       <div class="row">
@@ -35,8 +34,8 @@
       </div>
     </div>
 
-    <!-- 게임방 영역 -->
-    <div id="roomView" class="card hidden">
+    <!-- 게임 방 화면 -->
+    <div id="roomView" class="card" style="display: none;">
       <div class="header">
         <h2>🏠 방 코드: <span id="roomCodeDisplay">-</span></h2>
         <button id="leaveBtn" class="btn btn-danger" onclick="leaveRoom()">🚪 방 나가기</button>
@@ -48,10 +47,10 @@
       <div class="row">
         <label>🎮 게임 모드:</label>
         <select id="gameModeSelect" onchange="onModeChange()">
-          <option value="mafia">마피아 게임 (6~18명)</option>
-          <option value="liar">라이어 게임 (3~10명)</option>
-          <option value="shiritori">끝말잇기 (2~8명)</option>
-          <option value="choseong">초성 퀴즈 (2~8명)</option>
+          <option value="mafia">마피아 게임 (6명이상)</option>
+          <option value="liar">라이어 게임 (3명이상)</option>
+          <option value="shiritori">끝말잇기 (2명이상)</option>
+          <option value="choseong">초성 퀴즈 (2명이상)</option>
         </select>
       </div>
 
@@ -60,19 +59,14 @@
           <label>낮 시간:</label>
           <input type="number" id="dayTimeInput" value="60" style="width: 60px;"> 초
         </div>
-        <div class="row">
-          <label>마피아</label> <input type="number" id="mafiaCount" value="2" style="width: 40px;"> 명 |
-          <label>경찰</label> <input type="number" id="policeCount" value="1" style="width: 40px;"> 명 |
-          <label>의사</label> <input type="number" id="doctorCount" value="1" style="width: 40px;"> 명
-        </div>
       </div>
 
       <button id="startBtn" class="btn btn-success" onclick="startGame()">🚀 게임 시작</button>
     </div>
 
-    <!-- 채팅창 -->
-    <div id="chatCard" class="card hidden">
-      <h3 id="gameStatusTitle" style="text-align: center;">⏳ 대기 중</h3>
+    <!-- 채팅창 화면 -->
+    <div id="chatCard" class="card" style="display: none;">
+      <h3 style="text-align: center;">⏳ 대기 중</h3>
       <div id="chatBox" class="chat-box"></div>
       <div class="row" style="margin-top: 10px;">
         <input type="text" id="msgInput" style="flex: 1;" placeholder="메시지 입력" onkeypress="if(event.keyCode==13) sendMsg()">
@@ -87,19 +81,19 @@
 
     function createRoom() {
       const username = document.getElementById('usernameInput').value.trim();
-      if (!username) return alert('닉네임을 입력하세요.');
+      if (!username) return alert('닉네임을 입력해주세요.');
       socket.emit('create_room', { username });
     }
 
     function joinRoom() {
       const username = document.getElementById('usernameInput').value.trim();
       const roomId = document.getElementById('roomCodeInput').value.trim();
-      if (!username || !roomId) return alert('닉네임과 방 코드를 입력하세요.');
+      if (!username || !roomId) return alert('닉네임과 방 코드를 입력해주세요.');
       socket.emit('join_room', { roomId, username });
     }
 
     function leaveRoom() {
-      if (confirm('방에서 나가시겠습니까?')) {
+      if (confirm('정말 방에서 나가시겠습니까?')) {
         socket.emit('leave_room');
         location.reload();
       }
@@ -107,20 +101,11 @@
 
     function onModeChange() {
       const mode = document.getElementById('gameModeSelect').value;
-      document.getElementById('mafiaOptions').style.display = (mode === 'mafia') ? 'block' : 'none';
       socket.emit('change_game_mode', { roomId: currentRoomId, gameMode: mode });
     }
 
     function startGame() {
-      const mode = document.getElementById('gameModeSelect').value;
-      const options = {
-        dayTime: parseInt(document.getElementById('dayTimeInput').value) || 60,
-        mafiaCount: parseInt(document.getElementById('mafiaCount').value) || 2,
-        policeCount: parseInt(document.getElementById('policeCount').value) || 1,
-        doctorCount: parseInt(document.getElementById('doctorCount').value) || 1
-      };
-
-      socket.emit('start_game', { roomId: currentRoomId, options });
+      socket.emit('start_game', { roomId: currentRoomId });
     }
 
     function sendMsg() {
@@ -132,14 +117,14 @@
 
     socket.on('join_success', ({ roomId }) => {
       currentRoomId = roomId;
-      document.getElementById('loginView').classList.add('hidden');
-      document.getElementById('roomView').classList.remove('hidden');
-      document.getElementById('chatCard').classList.remove('hidden');
+      document.getElementById('loginView').style.display = 'none';
+      document.getElementById('roomView').style.display = 'block';
+      document.getElementById('chatCard').style.display = 'block';
     });
 
     socket.on('system_message', (msg) => {
       const box = document.getElementById('chatBox');
-      box.innerHTML += `<div style="color:#ffcc00;">[시스템] ${msg}</div>`;
+      box.innerHTML += `<div style="color: #ff9f43; font-weight: bold;">[시스템] ${msg}</div>`;
       box.scrollTop = box.scrollHeight;
     });
 
@@ -154,10 +139,11 @@
       document.getElementById('roomCodeDisplay').innerText = data.roomId;
       document.getElementById('playerCount').innerText = data.players.length;
       document.getElementById('playerList').innerText = data.players.map(p => p.username + (p.id === data.host ? ' 👑' : '')).join(', ');
-      
+
       const isHost = socket.id === data.host;
       document.getElementById('gameModeSelect').disabled = !isHost;
       document.getElementById('startBtn').style.display = isHost ? 'block' : 'none';
+      
       document.getElementById('gameModeSelect').value = data.gameMode;
       document.getElementById('mafiaOptions').style.display = (data.gameMode === 'mafia') ? 'block' : 'none';
     });
