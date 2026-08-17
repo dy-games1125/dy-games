@@ -4,21 +4,78 @@
   <meta charset="UTF-8">
   <title>미니게임 천국</title>
   <style>
-    body { background-color: #2b1d0c; color: #fff; font-family: sans-serif; display: flex; justify-content: center; }
-    .container { width: 420px; margin-top: 20px; }
-    .card { background: #42281d; border-radius: 12px; padding: 15px; margin-bottom: 15px; border: 1px solid #5a3829; }
-    .opt-row { margin-top: 10px; font-size: 14px; }
+    /* CSS 스타일 직접 작성 */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      background-color: #2b1d0c !important;
+      color: #ffffff !important;
+      font-family: 'Noto Sans KR', sans-serif;
+      display: flex;
+      justify-content: center;
+      padding-top: 20px;
+    }
+    .container {
+      width: 420px;
+    }
+    .card {
+      background-color: #42281d;
+      border-radius: 12px;
+      padding: 15px;
+      margin-bottom: 15px;
+      border: 1px solid #5a3829;
+    }
+    .opt-row {
+      margin-top: 10px;
+      font-size: 14px;
+    }
     select, input[type="number"], input[type="text"] {
-      background: #fff8dc; border: 1px solid #ccc; border-radius: 6px; padding: 5px; color: #333; font-weight: bold;
+      background: #fff8dc;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      padding: 5px;
+      color: #333;
+      font-weight: bold;
     }
     .btn-start {
-      width: 100%; background: #00a870; color: white; border: none; padding: 10px;
-      border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 12px;
+      width: 100%;
+      background: #00a870;
+      color: white;
+      border: none;
+      padding: 10px;
+      border-radius: 8px;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 12px;
     }
-    #chat-box { height: 200px; background: #23140c; border-radius: 8px; padding: 10px; overflow-y: auto; color: #ffb86c; font-size: 13px; }
-    .chat-input-sec { display: flex; gap: 5px; margin-top: 10px; }
-    .chat-input-sec input { flex: 1; }
-    .chat-input-sec button { background: #8b5a2b; color: white; border: none; border-radius: 6px; padding: 0 15px; cursor: pointer; }
+    #chat-box {
+      height: 200px;
+      background: #23140c;
+      border-radius: 8px;
+      padding: 10px;
+      overflow-y: auto;
+      color: #ffb86c;
+      font-size: 13px;
+    }
+    .chat-input-sec {
+      display: flex;
+      gap: 5px;
+      margin-top: 10px;
+    }
+    .chat-input-sec input {
+      flex: 1;
+    }
+    .chat-input-sec button {
+      background: #8b5a2b;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      padding: 0 15px;
+      cursor: pointer;
+    }
   </style>
 </head>
 <body>
