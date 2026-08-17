@@ -39,7 +39,7 @@
     input, select { background: #fffde8; border: 1px solid #ccc; padding: 8px 10px; border-radius: 6px; color: #333; font-size: 14px; width: 100%; }
     .row { margin: 10px 0; display: flex; align-items: center; gap: 8px; }
     .row label { white-space: nowrap; font-size: 13px; min-width: 85px; }
-    .chat-box { background: #1e130e; height: 140px; border-radius: 8px; padding: 10px; overflow-y: auto; color: #ffab76; font-size: 13px; }
+    .chat-box { background: #1e130e; height: 160px; border-radius: 8px; padding: 10px; overflow-y: auto; color: #ffab76; font-size: 13px; }
     .turn-highlight { background: #f39c12 !important; color: #000; animation: pulse 1s infinite; font-weight: bold; padding: 5px; border-radius: 6px; }
     @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.6; } 100% { opacity: 1; } }
     .rank-bronze { background: #cd7f32; padding: 10px; border-radius: 8px; margin: 5px 0; color: #000; font-weight: bold; }
@@ -96,14 +96,14 @@
       <div id="gameContentArea"></div>
     </div>
 
-    <!-- 순위 및 점수 공개 화면 -->
+    <!-- 순위 및 점수 공개 화면 (낮은 등수부터 공개) -->
     <div id="rankingView" class="card" style="display: none; text-align: center;">
       <h2>🏆 최종 게임 결과</h2>
       <div id="rankingListContainer"></div>
       <button class="btn btn-success" onclick="location.reload()">대기실로 돌아가기</button>
     </div>
 
-    <!-- 채팅창 화면 -->
+    <!-- 실시간 채팅창 (관전 전용 메시지 표시 포함) -->
     <div id="chatCard" class="card" style="display: none;">
       <h3>💬 실시간 채팅</h3>
       <div id="chatBox" class="chat-box"></div>
@@ -146,7 +146,10 @@
 
     function updateOptionsToServer() {
       const mode = document.getElementById('gameModeSelect').value;
-      let options = {};
+      let options = {
+        maxPlayers: parseInt(document.getElementById('optMaxPlayers').value)
+      };
+
       if (mode === 'liar') {
         options.liarTime = parseInt(document.getElementById('optLiarTime').value);
         options.liarCategory = document.getElementById('optLiarCategory').value;
@@ -190,8 +193,7 @@
 
     socket.on('receive_message', ({ username, message, isDead }) => {
       const box = document.getElementById('chatBox');
-      const prefix = isDead ? '💀 [관전]' : '';
-      box.innerHTML += `<div><strong>${prefix}${username}:</strong> ${message}</div>`;
+      box.innerHTML += `<div><strong>${username}:</strong> ${message}</div>`;
       box.scrollTop = box.scrollHeight;
     });
 
@@ -212,43 +214,53 @@
 
     function renderOptionsUI(mode, opt, isHost) {
       const container = document.getElementById('gameOptionsContainer');
-      let html = '';
+      let html = `
+        <div class="row"><label>👥 최대 인원:</label><select id="optMaxPlayers" ${!isHost?'disabled':''} onchange="updateOptionsToServer()">
+          <option value="2" ${opt.maxPlayers==2?'selected':''}>2명</option>
+          <option value="4" ${opt.maxPlayers==4?'selected':''}>4명</option>
+          <option value="6" ${opt.maxPlayers==6?'selected':''}>6명</option>
+          <option value="8" ${opt.maxPlayers==8?'selected':''}>8명</option>
+          <option value="12" ${opt.maxPlayers==12?'selected':''}>12명</option>
+          <option value="18" ${opt.maxPlayers==18?'selected':''}>18명</option>
+        </select></div>`;
+
       if (mode === 'liar') {
-        html = `
+        html += `
           <div class="row"><label>⏱️ 제한시간:</label><select id="optLiarTime" ${!isHost?'disabled':''} onchange="updateOptionsToServer()">
             <option value="15" ${opt.liarTime==15?'selected':''}>15초</option>
-            <option value="25" ${opt.liarTime==25?'selected':''}>25초</option>
+            <option value="25" ${opt.liarTime==25?'selected':''}>25초 (기본)</option>
             <option value="40" ${opt.liarTime==40?'selected':''}>40초</option>
           </select></div>
           <div class="row"><label>📂 카테고리:</label><select id="optLiarCategory" ${!isHost?'disabled':''} onchange="updateOptionsToServer()">
-            <option value="all" ${opt.liarCategory==='all'?'selected':''}>랜덤 (전체)</option>
+            <option value="all" ${opt.liarCategory==='all'?'selected':''}>랜덤 (기본)</option>
             <option value="음식" ${opt.liarCategory==='음식'?'selected':''}>음식</option>
             <option value="동물" ${opt.liarCategory==='동물'?'selected':''}>동물</option>
             <option value="장소" ${opt.liarCategory==='장소'?'selected':''}>장소</option>
             <option value="물건" ${opt.liarCategory==='물건'?'selected':''}>물건</option>
           </select></div>`;
       } else if (mode === 'mafia') {
-        html = `
+        html += `
           <div class="row"><label>⏳ 추리시간:</label><select id="optMafiaDayTime" ${!isHost?'disabled':''} onchange="updateOptionsToServer()">
             <option value="45" ${opt.mafiaDayTime==45?'selected':''}>45초</option>
-            <option value="60" ${opt.mafiaDayTime==60?'selected':''}>60초</option>
+            <option value="60" ${opt.mafiaDayTime==60?'selected':''}>60초 (기본)</option>
+            <option value="90" ${opt.mafiaDayTime==90?'selected':''}>90초</option>
+            <option value="120" ${opt.mafiaDayTime==120?'selected':''}>2분</option>
           </select></div>`;
       } else if (mode === 'shiritori') {
-        html = `
+        html += `
           <div class="row"><label>🔤 최소글자:</label><select id="optShiritoriMinLen" ${!isHost?'disabled':''} onchange="updateOptionsToServer()">
             <option value="2" ${opt.shiritoriMinLen==2?'selected':''}>2글자 이상</option>
             <option value="3" ${opt.shiritoriMinLen==3?'selected':''}>3글자 이상</option>
           </select></div>
           <div class="row"><label>⏱️ 제한시간:</label><select id="optShiritoriTime" ${!isHost?'disabled':''} onchange="updateOptionsToServer()">
             <option value="15" ${opt.shiritoriTime==15?'selected':''}>15초</option>
-            <option value="20" ${opt.shiritoriTime==20?'selected':''}>20초</option>
             <option value="30" ${opt.shiritoriTime==30?'selected':''}>30초</option>
             <option value="45" ${opt.shiritoriTime==45?'selected':''}>45초</option>
           </select></div>`;
       } else if (mode === 'choseong') {
-        html = `
+        html += `
           <div class="row"><label>🎯 목표점수:</label><select id="optChoseongTarget" ${!isHost?'disabled':''} onchange="updateOptionsToServer()">
-            <option value="15" ${opt.choseongTargetScore==15?'selected':''}>15점</option>
+            <option value="10" ${opt.choseongTargetScore==10?'selected':''}>10점</option>
             <option value="20" ${opt.choseongTargetScore==20?'selected':''}>20점</option>
             <option value="30" ${opt.choseongTargetScore==30?'selected':''}>30점</option>
           </select></div>`;
@@ -259,13 +271,13 @@
     socket.on('start_game_ui', ({ gameMode, initialWord }) => {
       document.getElementById('gamePlayView').style.display = 'block';
       document.getElementById('rankingView').style.display = 'none';
-      document.getElementById('gameTitle').innerText = `🚀 ${gameMode.toUpperCase()} 게임 플레이 중`;
+      document.getElementById('gameTitle').innerText = `🚀 ${gameMode.toUpperCase()} 진행 중`;
       
       const contentArea = document.getElementById('gameContentArea');
       
       if (gameMode === 'choseong') {
         contentArea.innerHTML = `
-          <p>🎯 초성 퀴즈가 시작되었습니다! (길이에 따라 3~10점 차등 지급)</p>
+          <p>🎯 초성 퀴즈! (단어 글자 수에 따라 1~5점 차등 지급)</p>
           <div style="background:#2e1e17; padding:15px; border-radius:6px; margin:10px 0; text-align:center;">
             <h2 id="choseongDisplay" style="color:#f39c12; font-size:1.8rem; margin:5px 0;">로딩중...</h2>
           </div>
@@ -274,56 +286,22 @@
             <button class="btn" style="background:#10ac84; color:white; padding:8px 12px;" onclick="submitChoseong()">제출</button>
           </div>
         `;
-      } else if (gameMode === 'liar') {
-        contentArea.innerHTML = `
-          <p>🕵️ 라이어 게임이 시작되었습니다!</p>
-          <div style="background:#2e1e17; padding:15px; border-radius:6px; margin:10px 0; text-align:center;">
-            <p id="liarCategoryView" style="color:#aaa; font-size:13px;"></p>
-            <h2 id="liarWordView" style="color:#f39c12; font-size:1.4rem; margin:10px 0;">역할 확인 중...</h2>
-          </div>
-          <p style="text-align:center; color:#ccc;">채팅을 통해 번갈아가며 설명하고 라이어를 찾아내세요!</p>
-        `;
-      } else if (gameMode === 'shiritori') {
-        const isHost = currentRoomData && socket.id === currentRoomData.host;
-        contentArea.innerHTML = `
-          <p>🎮 끝말잇기가 시작되었습니다!</p>
-          <div style="background:#2e1e17; padding:10px; border-radius:6px; margin:10px 0; text-align:center;">
-            <p>📌 제시어: <strong id="currentWord" style="color:#f39c12; font-size:1.3rem;">${initialWord || '없음 (첫 번째 사람이 자유롭게 시작)'}</strong></p>
-            <p id="usedWordsList" style="font-size:11px; color:#aaa; margin-top:5px;">사용된 단어: 없음</p>
-          </div>
-          <div id="turnNotice" class="turn-highlight" style="text-align:center; margin:10px 0;">가위바위보 순서 정하기 대기 중...</div>
-          ${isHost ? '<button id="rpsStartBtn" class="btn btn-success" onclick="triggerRps()">✌️ 가위바위보 시작</button>' : '<p id="rpsWaitMsg" style="text-align:center; color:#f39c12;">방장의 가위바위보 시작을 기다리는 중...</p>'}
-          <div id="rpsButtons" style="display: none; gap: 5px; margin: 10px 0;">
-            <button class="btn" style="flex:1; background:#3498db; color:white;" onclick="playRPS('rock')">✊ 바위</button>
-            <button class="btn" style="flex:1; background:#e67e22; color:white;" onclick="playRPS('paper')">✋ 보</button>
-            <button class="btn" style="flex:1; background:#e74c3c; color:white;" onclick="playRPS('scissors')">✌️ 가위</button>
-          </div>
-          <div class="row" style="gap:5px;">
-            <input type="text" id="gameInput" placeholder="차례에만 입력 가능" style="flex:1;" disabled onkeypress="if(event.keyCode==13) submitGameInput()">
-            <button id="gameSubmitBtn" class="btn" style="background:#10ac84; color:white; padding:8px 12px;" disabled onclick="submitGameInput()">입력</button>
-            <button id="surrenderBtn" class="btn btn-danger" style="padding:8px 12px;" disabled onclick="surrenderGame()">기권</button>
-          </div>
-        `;
       } else if (gameMode === 'mafia') {
         contentArea.innerHTML = `
-          <p>🔪 마피아 게임이 시작되었습니다!</p>
-          <div style="background:#2e1e17; padding:10px; border-radius:6px; margin:10px 0; text-align:center;">
-            <p>직업 배정 완료. 토론을 진행하세요.</p>
+          <p>🔪 마피아 게임 진행 중</p>
+          <div style="background:#2e1e17; padding:15px; border-radius:6px; margin:10px 0; text-align:center;">
+            <h3 id="myRoleDisplay" style="color:#f39c12;">당신의 직업 확인 중...</h3>
           </div>
+          <div id="mafiaActionArea"></div>
         `;
       }
     });
 
-    socket.on('liar_role_assign', ({ isLiar, category, word }) => {
-      setTimeout(() => {
-        const catView = document.getElementById('liarCategoryView');
-        const wordView = document.getElementById('liarWordView');
-        if (catView) catView.innerText = `카테고리: [ ${category} ]`;
-        if (wordView) {
-          wordView.innerText = word;
-          if (isLiar) wordView.style.color = '#e74c3c';
-        }
-      }, 500);
+    socket.on('assign_role', ({ role }) => {
+      const display = document.getElementById('myRoleDisplay');
+      if (display) {
+        display.innerText = `당신의 직업: [ ${role.toUpperCase()} ]`;
+      }
     });
 
     socket.on('choseong_new_problem', ({ choseong }) => {
@@ -338,103 +316,26 @@
       input.value = '';
     }
 
-    function triggerRps() { socket.emit('trigger_rps', { roomId: currentRoomId }); }
-
-    socket.on('show_rps_buttons', () => {
-      const rpsBtns = document.getElementById('rpsButtons');
-      const startBtn = document.getElementById('rpsStartBtn');
-      const waitMsg = document.getElementById('rpsWaitMsg');
-      if (rpsBtns) rpsBtns.style.display = 'flex';
-      if (startBtn) startBtn.style.display = 'none';
-      if (waitMsg) waitMsg.style.display = 'none';
-    });
-
-    function playRPS(choice) {
-      socket.emit('play_rps', { roomId: currentRoomId, choice });
-      const rpsBtns = document.getElementById('rpsButtons');
-      if (rpsBtns) rpsBtns.style.display = 'none';
-      const notice = document.getElementById('turnNotice');
-      if (notice) notice.innerText = `가위바위보 선택 완료! 결과를 기다리는 중...`;
-    }
-
-    socket.on('rps_draw', ({ message }) => {
-      const notice = document.getElementById('turnNotice');
-      if (notice) notice.innerText = message;
-      const rpsBtns = document.getElementById('rpsButtons');
-      if (rpsBtns) rpsBtns.style.display = 'flex';
-    });
-
-    socket.on('rps_result', ({ winner, nextTurnId }) => {
-      const notice = document.getElementById('turnNotice');
-      if (notice) notice.innerText = `🎉 가위바위보 승리자: ${winner}님!`;
-      updateTurnUI(nextTurnId, winner);
-    });
-
-    socket.on('timeout_next_turn', ({ nextTurnId, nextTurnName }) => {
-      updateTurnUI(nextTurnId, nextTurnName);
-    });
-
-    function updateTurnUI(turnId, turnName) {
-      const inputEl = document.getElementById('gameInput');
-      const submitBtn = document.getElementById('gameSubmitBtn');
-      const surrenderBtn = document.getElementById('surrenderBtn');
-
-      if (socket.id === turnId) {
-        if (inputEl) { inputEl.disabled = false; inputEl.placeholder = "내 차례입니다! 단어를 입력하세요"; }
-        if (submitBtn) submitBtn.disabled = false;
-        if (surrenderBtn) surrenderBtn.disabled = false;
-      } else {
-        if (inputEl) { inputEl.disabled = true; inputEl.placeholder = `${turnName}님의 차례입니다`; }
-        if (submitBtn) submitBtn.disabled = true;
-        if (surrenderBtn) surrenderBtn.disabled = true;
-      }
-    }
-
-    function surrenderGame() {
-      if (confirm('정말 기권하시겠습니까? 기권 시 바로 탈락 처리됩니다.')) {
-        socket.emit('surrender_shiritori', { roomId: currentRoomId });
-      }
-    }
-
-    function submitGameInput() {
-      const inputEl = document.getElementById('gameInput');
-      const val = inputEl.value.trim();
-      if (!val) return;
-      socket.emit('game_input_word', { roomId: currentRoomId, word: val });
-      inputEl.value = '';
-    }
-
-    socket.on('update_game_word', ({ username, word, nextTurnId, nextTurnName, usedWords }) => {
-      const wordEl = document.getElementById('currentWord');
-      if (wordEl) wordEl.innerText = `${word} (${username})`;
-
-      const usedEl = document.getElementById('usedWordsList');
-      if (usedEl) usedEl.innerText = `사용된 단어: ${usedWords.join(', ')}`;
-
-      const notice = document.getElementById('turnNotice');
-      if (notice) notice.innerText = `현재 차례: ${nextTurnName}님`;
-
-      updateTurnUI(nextTurnId, nextTurnName);
-    });
-
+    // 최종 결과 순위 공개 (낮은 등수부터 메달 효과 출력)
     socket.on('show_final_ranking', (sortedScores) => {
       document.getElementById('gamePlayView').style.display = 'none';
       document.getElementById('rankingView').style.display = 'block';
       const container = document.getElementById('rankingListContainer');
       container.innerHTML = '';
 
+      const total = sortedScores.length;
       sortedScores.forEach((item, index) => {
-        const rank = index + 1;
-        let className = '';
+        const rank = total - index;
+        let className = 'card';
         let medal = `${rank}등`;
+
         if (rank === 1) { className = 'rank-gold'; medal = '🥇 금메달 (1등)'; }
         else if (rank === 2) { className = 'rank-silver'; medal = '🥈 은메달 (2등)'; }
         else if (rank === 3) { className = 'rank-bronze'; medal = '🥉 동메달 (3등)'; }
 
         const div = document.createElement('div');
-        div.className = className || 'card';
+        div.className = className;
         div.style.margin = '8px 0';
-        div.style.background = rank > 3 ? '#3d2920' : '';
         div.innerHTML = `<strong>${medal}</strong> - ${item.username} (${item.score}점)`;
         container.appendChild(div);
       });
