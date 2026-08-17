@@ -4,7 +4,6 @@
   <meta charset="UTF-8">
   <title>미니게임 천국</title>
   <style>
-    /* CSS 스타일 직접 작성 */
     * {
       box-sizing: border-box;
       margin: 0;
@@ -28,6 +27,15 @@
       margin-bottom: 15px;
       border: 1px solid #5a3829;
     }
+    .login-sec {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .login-sec input {
+      width: 100%;
+      padding: 8px;
+    }
     .opt-row {
       margin-top: 10px;
       font-size: 14px;
@@ -36,11 +44,11 @@
       background: #fff8dc;
       border: 1px solid #ccc;
       border-radius: 6px;
-      padding: 5px;
+      padding: 6px;
       color: #333;
       font-weight: bold;
     }
-    .btn-start {
+    .btn-main {
       width: 100%;
       background: #00a870;
       color: white;
@@ -49,10 +57,13 @@
       border-radius: 8px;
       font-weight: bold;
       cursor: pointer;
-      margin-top: 12px;
+      margin-top: 10px;
+    }
+    .btn-main:hover {
+      background: #008f5f;
     }
     #chat-box {
-      height: 200px;
+      height: 220px;
       background: #23140c;
       border-radius: 8px;
       padding: 10px;
@@ -75,22 +86,52 @@
       border-radius: 6px;
       padding: 0 15px;
       cursor: pointer;
+      font-weight: bold;
+    }
+    .player-list {
+      margin-top: 8px;
+      font-size: 12px;
+      color: #dcdcdc;
+      background: #331f16;
+      padding: 6px;
+      border-radius: 6px;
     }
   </style>
 </head>
 <body>
 
 <div class="container">
-  <!-- 방 옵션 카드 -->
-  <div class="card">
-    <div style="display:flex; justify-content:space-between;">
-      <span>👑 방장: <span id="host-name">-</span></span>
-      <span>인원: <span id="player-count">0</span>/18</span>
-    </div>
-    <hr style="border-color:#5a3829; margin: 10px 0;">
 
+  <!-- 1. 로그인 / 방 입장 카드 -->
+  <div class="card" id="login-card">
+    <h2 style="text-align: center; margin-bottom: 15px; color: #ffca28;">🎮 미니게임 천국</h2>
+    <div class="login-sec">
+      <label>닉네임:
+        <input type="text" id="input-username" placeholder="닉네임을 입력하세요">
+      </label>
+      <label>방 코드:
+        <input type="text" id="input-roomid" placeholder="방 코드 (예: 1004)">
+      </label>
+      <button class="btn-main" onclick="joinRoom()">입장하기</button>
+    </div>
+  </div>
+
+  <!-- 2. 게임 방 카드 (입장 후 표시) -->
+  <div class="card" id="room-card" style="display: none;">
+    <div style="display:flex; justify-content:space-between; font-weight: bold;">
+      <span>🏠 방 코드: <span id="display-room-id" style="color:#ffca28;">-</span></span>
+      <span>👑 방장: <span id="host-name">-</span></span>
+    </div>
+    <div style="margin-top: 5px; font-size: 13px;">
+      👥 접속 인원: <span id="player-count">0</span>/18
+    </div>
+    <div class="player-list" id="player-list">명단 불러오는 중...</div>
+
+    <hr style="border-color:#5a3829; margin: 12px 0;">
+
+    <!-- 방 설정 옵션 -->
     <div class="opt-row">
-      🎮 게임 모드 선택: 
+      🎮 게임 모드: 
       <select id="game-mode" onchange="onModeChange()">
         <option value="liar">라이어 게임</option>
         <option value="mafia">마피아 게임 (6~18명)</option>
@@ -99,7 +140,7 @@
       </select>
     </div>
 
-    <!-- 라이어 게임 카테고리 옵션 -->
+    <!-- 라이어 옵션 -->
     <div id="option-liar" class="opt-row">
       카테고리: 
       <select id="liar-category" onchange="updateSettings()">
@@ -111,7 +152,7 @@
       </select>
     </div>
 
-    <!-- 마피아 게임 옵션 -->
+    <!-- 마피아 옵션 -->
     <div id="option-mafia" class="opt-row" style="display:none;">
       낮 시간: <input type="number" id="mafia-day" value="60" style="width:45px;" onchange="updateSettings()"> 초
       <div style="margin-top: 8px;">
@@ -141,28 +182,49 @@
       목표 점수: <input type="number" id="target-score" value="6" min="6" max="20" style="width:45px;" onchange="updateSettings()"> 점
     </div>
 
-    <button class="btn-start" onclick="startGame()">🚀 게임 시작</button>
+    <button id="btn-start" class="btn-main" onclick="startGame()">🚀 게임 시작</button>
   </div>
 
-  <!-- 대기실 및 채팅 창 -->
-  <div class="card">
+  <!-- 3. 채팅 및 진행 창 -->
+  <div class="card" id="chat-card" style="display: none;">
     <div id="game-status" style="text-align:center; font-weight:bold; margin-bottom:8px; color:#4deaea;">⏳ 대기 중</div>
-    <div id="timer" style="text-align:center; color:#ff4d4d; font-weight:bold;"></div>
+    <div id="timer" style="text-align:center; color:#ff4d4d; font-weight:bold; margin-bottom: 5px;"></div>
     <div id="chat-box"></div>
     <div class="chat-input-sec">
-      <input type="text" id="chat-input" placeholder="정답/단어 입력" onkeypress="if(event.keyCode==13) sendMessage()">
+      <input type="text" id="chat-input" placeholder="메시지 또는 정답 입력" onkeypress="if(event.keyCode==13) sendMessage()">
       <button onclick="sendMessage()">전송</button>
     </div>
   </div>
+
 </div>
 
 <script src="/socket.io/socket.io.js"></script>
 <script>
   const socket = io();
-  const roomId = "1";
-  const username = "플레이어_" + Math.floor(Math.random() * 1000);
+  let currentRoomId = "";
+  let myUsername = "";
 
-  socket.emit('join_room', { roomId, username });
+  function joinRoom() {
+    const username = document.getElementById('input-username').value.trim();
+    const roomId = document.getElementById('input-roomid').value.trim();
+
+    if (!username || !roomId) {
+      alert("닉네임과 방 코드를 모두 입력해 주세요!");
+      return;
+    }
+
+    myUsername = username;
+    currentRoomId = roomId;
+
+    socket.emit('join_room', { roomId, username });
+  }
+
+  socket.on('join_success', ({ roomId, username }) => {
+    document.getElementById('login-card').style.display = 'none';
+    document.getElementById('room-card').style.display = 'block';
+    document.getElementById('chat-card').style.display = 'block';
+    document.getElementById('display-room-id').innerText = roomId;
+  });
 
   function onModeChange() {
     const mode = document.getElementById('game-mode').value;
@@ -188,24 +250,37 @@
       shiritoriLen: document.getElementById('shiritori-len').value,
       targetScore: document.getElementById('target-score').value
     };
-    socket.emit('update_settings', { roomId, settings });
+    socket.emit('update_settings', { roomId: currentRoomId, settings });
   }
 
   function startGame() {
-    socket.emit('start_game', { roomId });
+    socket.emit('start_game', { roomId: currentRoomId });
   }
 
   function sendMessage() {
     const input = document.getElementById('chat-input');
     if (!input.value.trim()) return;
-    socket.emit('send_message', { roomId, message: input.value });
+    socket.emit('send_message', { roomId: currentRoomId, message: input.value });
     input.value = '';
   }
 
-  socket.on('update_room', ({ players, host, gameMode }) => {
-    document.getElementById('player-count').innerText = players.length;
-    const hostPlayer = players.find(p => p.id === host);
-    if (hostPlayer) document.getElementById('host-name').innerText = hostPlayer.username;
+  socket.on('update_room', (data) => {
+    document.getElementById('player-count').innerText = data.players.length;
+    
+    const hostPlayer = data.players.find(p => p.id === data.host);
+    if (hostPlayer) {
+      document.getElementById('host-name').innerText = hostPlayer.username;
+    }
+
+    // 방장이 아닌 경우 컨트롤 비활성화 처리
+    const isHost = (socket.id === data.host);
+    document.getElementById('btn-start').style.display = isHost ? 'block' : 'none';
+    document.getElementById('game-mode').disabled = !isHost;
+    document.getElementById('liar-category').disabled = !isHost;
+
+    // 플레이어 목록 표시
+    const pNames = data.players.map(p => p.username + (p.id === data.host ? '👑' : '')).join(', ');
+    document.getElementById('player-list').innerText = "접속자: " + pNames;
   });
 
   socket.on('receive_message', ({ username, message }) => {
@@ -235,9 +310,10 @@
     document.getElementById('timer').innerText = `⏱️ 남은 시간: ${timeLeft}초`;
   });
 
-  socket.on('choseong_question', ({ choseong }) => {
+  socket.on('choseong_question', ({ choseong, scores, players }) => {
+    let scoreText = players.map(p => `${p.username}: ${scores[p.id] || 0}점`).join(' | ');
     document.getElementById('game-status').innerText = `💡 문제 초성: [ ${choseong} ]`;
-    document.getElementById('timer').innerText = '';
+    document.getElementById('timer').innerText = `📊 점수: ${scoreText}`;
   });
 
   socket.on('game_over', ({ winner, loser, reason }) => {
