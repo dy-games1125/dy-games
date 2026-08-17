@@ -4,11 +4,7 @@
   <meta charset="UTF-8">
   <title>미니게임 천국</title>
   <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
       background-color: #2b1d0c !important;
       color: #ffffff !important;
@@ -17,137 +13,109 @@
       justify-content: center;
       padding-top: 20px;
     }
-    .container {
-      width: 440px;
-    }
+    .container { width: 450px; }
     .card {
       background-color: #42281d;
       border-radius: 12px;
       padding: 16px;
       margin-bottom: 15px;
       border: 1px solid #5a3829;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
     }
-    .form-group {
-      margin-bottom: 12px;
-    }
-    .form-group label {
-      display: block;
-      margin-bottom: 5px;
-      font-weight: bold;
-      color: #ffca28;
-    }
-    .form-group input {
-      width: 100%;
-      padding: 8px;
-    }
-    .opt-row {
-      margin-top: 10px;
-      font-size: 14px;
-    }
+    .form-group { margin-bottom: 12px; }
+    .form-group label { display: block; margin-bottom: 5px; font-weight: bold; color: #ffca28; }
+    .btn-group { display: flex; gap: 8px; margin-top: 10px; }
+    .btn-main { flex: 1; background: #00a870; color: white; border: none; padding: 10px; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.2s; }
+    .btn-main:hover { background: #008f5f; transform: translateY(-1px); }
+    .btn-sub { flex: 1; background: #e65100; color: white; border: none; padding: 10px; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.2s; }
+    .btn-sub:hover { background: #bf360c; transform: translateY(-1px); }
+    .opt-row { margin-top: 10px; font-size: 14px; }
     select, input[type="number"], input[type="text"] {
-      background: #fff8dc;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-      padding: 6px;
-      color: #333;
-      font-weight: bold;
+      background: #fff8dc; border: 1px solid #ccc; border-radius: 6px; padding: 8px; color: #333; font-weight: bold; width: 100%;
     }
-    .btn-main {
-      width: 100%;
-      background: #00a870;
-      color: white;
-      border: none;
-      padding: 10px;
-      border-radius: 8px;
-      font-weight: bold;
-      cursor: pointer;
-      margin-top: 10px;
-    }
-    .btn-main:hover {
-      background: #008f5f;
-    }
-    .rps-sec {
-      background: #331f16;
-      border: 1px dashed #ffca28;
-      border-radius: 8px;
-      padding: 10px;
-      margin-top: 10px;
-      text-align: center;
+    .panel-box {
+      background: #331f16; border: 2px dashed #ffca28; border-radius: 8px; padding: 12px; margin-bottom: 12px; text-align: center;
     }
     .rps-btns button {
-      background: #ff9800;
-      border: none;
-      color: white;
-      padding: 6px 12px;
-      margin: 4px;
-      border-radius: 6px;
-      font-weight: bold;
-      cursor: pointer;
+      background: #ff9800; border: none; color: white; padding: 8px 14px; border-radius: 6px; font-weight: bold; cursor: pointer; margin: 3px; transition: 0.2s;
     }
-    #chat-box {
-      height: 220px;
-      background: #23140c;
-      border-radius: 8px;
+    .rps-btns button:hover { background: #e65100; transform: scale(1.05); }
+    
+    /* 발언 순서 효과 애니메이션 스타일 */
+    .order-container {
+      margin: 10px 0;
       padding: 10px;
-      overflow-y: auto;
-      color: #ffb86c;
-      font-size: 13px;
+      background: #23140c;
+      border: 1px solid #ffca28;
+      border-radius: 8px;
     }
-    .chat-input-sec {
-      display: flex;
-      gap: 5px;
-      margin-top: 10px;
-    }
-    .chat-input-sec input {
-      flex: 1;
-    }
-    .chat-input-sec button {
-      background: #8b5a2b;
-      color: white;
-      border: none;
-      border-radius: 6px;
-      padding: 0 15px;
-      cursor: pointer;
+    .order-title {
+      color: #ffca28;
       font-weight: bold;
+      margin-bottom: 8px;
+      font-size: 14px;
     }
-    .player-list {
-      margin-top: 8px;
+    .order-badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      justify-content: center;
+    }
+    .order-badge {
+      background: #e65100;
+      color: white;
+      padding: 6px 10px;
+      border-radius: 20px;
       font-size: 12px;
-      color: #dcdcdc;
-      background: #331f16;
-      padding: 6px;
-      border-radius: 6px;
+      font-weight: bold;
+      opacity: 0;
+      transform: translateY(10px);
+      animation: fadeInUp 0.4s forwards;
     }
+    @keyframes fadeInUp {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    #chat-box {
+      height: 220px; background: #23140c; border-radius: 8px; padding: 10px; overflow-y: auto; color: #ffb86c; font-size: 13px; white-space: pre-line;
+    }
+    .chat-input-sec { display: flex; gap: 5px; margin-top: 10px; }
+    .chat-input-sec input { flex: 1; }
+    .chat-input-sec button { background: #8b5a2b; color: white; border: none; border-radius: 6px; padding: 0 15px; cursor: pointer; font-weight: bold; }
   </style>
 </head>
 <body>
 
 <div class="container">
 
-  <!-- 1. 입장 (닉네임 + 방 코드) -->
+  <!-- 1. 로그인 / 방 생성 화면 -->
   <div class="card" id="login-card">
     <h2 style="text-align: center; margin-bottom: 15px; color: #ffca28;">🎮 미니게임 천국</h2>
     <div class="form-group">
       <label>닉네임</label>
-      <input type="text" id="input-username" placeholder="사용할 닉네임 입력">
+      <input type="text" id="input-username" placeholder="닉네임을 입력하세요">
     </div>
     <div class="form-group">
-      <label>방 코드</label>
-      <input type="text" id="input-roomid" placeholder="입장 또는 생성할 방 코드 (예: 1004)">
+      <label>방 코드 (참가 시에만 입력)</label>
+      <input type="text" id="input-roomid" placeholder="생성 시 자동으로 6자리 생성됨">
     </div>
-    <button class="btn-main" onclick="joinRoom()">방 입장하기 / 만들기</button>
+    <div class="btn-group">
+      <button class="btn-main" onclick="createRoom()">🎲 방 새로 만들기</button>
+      <button class="btn-sub" onclick="joinRoom()">🚪 방 참가하기</button>
+    </div>
   </div>
 
-  <!-- 2. 게임 대기실 -->
+  <!-- 2. 대기실 화면 -->
   <div class="card" id="room-card" style="display: none;">
     <div style="display:flex; justify-content:space-between; font-weight: bold;">
-      <span>🏠 방 코드: <span id="display-room-id" style="color:#ffca28;">-</span></span>
+      <span>🏠 방 코드: <span id="display-room-id" style="color:#ffca28; font-size:18px;">-</span></span>
       <span>👑 방장: <span id="host-name">-</span></span>
     </div>
-    <div style="margin-top: 5px; font-size: 13px;">
-      👥 인원: <span id="player-count">0</span>/18
-    </div>
-    <div class="player-list" id="player-list">명단 불러오는 중...</div>
+    <div style="margin-top: 5px; font-size: 13px;">👥 인원: <span id="player-count">0</span>명</div>
+    <div id="player-list" style="margin-top: 8px; font-size: 12px; color: #dcdcdc;"></div>
 
     <hr style="border-color:#5a3829; margin: 12px 0;">
 
@@ -175,44 +143,44 @@
 
     <!-- 마피아 옵션 -->
     <div id="option-mafia" class="opt-row" style="display:none;">
-      낮 시간: <input type="number" id="mafia-day" value="60" style="width:45px;" onchange="updateSettings()"> 초
+      낮 시간: <input type="number" id="mafia-day" value="60" style="width:50px; display:inline-block;" onchange="updateSettings()"> 초
       <div style="margin-top: 8px;">
-        마피아 <input type="number" id="mafia-count" value="1" min="1" style="width:35px;" onchange="updateSettings()"> 명 | 
-        경찰 <input type="number" id="police-count" value="1" min="1" style="width:35px;" onchange="updateSettings()"> 명 | 
-        의사 <input type="number" id="doctor-count" value="1" min="1" style="width:35px;" onchange="updateSettings()"> 명
+        마피아 <input type="number" id="mafia-count" value="1" min="1" style="width:40px; display:inline-block;" onchange="updateSettings()"> 명 | 
+        경찰 <input type="number" id="police-count" value="1" min="1" style="width:40px; display:inline-block;" onchange="updateSettings()"> 명 | 
+        의사 <input type="number" id="doctor-count" value="1" min="1" style="width:40px; display:inline-block;" onchange="updateSettings()"> 명
       </div>
     </div>
 
     <!-- 끝말잇기 옵션 -->
     <div id="option-shiritori" class="opt-row" style="display:none;">
       제한 시간: 
-      <select id="shiritori-time" onchange="updateSettings()">
+      <select id="shiritori-time" onchange="updateSettings()" style="width:auto; display:inline-block;">
         <option value="10">10초</option>
         <option value="15">15초</option>
         <option value="20">20초</option>
       </select>
       글자 수: 
-      <select id="shiritori-len" onchange="updateSettings()">
+      <select id="shiritori-len" onchange="updateSettings()" style="width:auto; display:inline-block;">
         <option value="2">2글자</option>
         <option value="3">3글자</option>
       </select>
     </div>
 
-    <!-- 초성 퀴즈 옵션 -->
+    <!-- 초성 옵션 -->
     <div id="option-choseong" class="opt-row" style="display:none;">
-      목표 점수: <input type="number" id="target-score" value="6" min="6" max="20" style="width:45px;" onchange="updateSettings()"> 점
+      목표 점수: <input type="number" id="target-score" value="6" min="6" max="20" style="width:50px; display:inline-block;" onchange="updateSettings()"> 점
     </div>
 
-    <button id="btn-start" class="btn-main" onclick="startGame()">🚀 게임 시작</button>
+    <button id="btn-start" class="btn-main" style="width:100%; margin-top:12px;" onclick="startGame()">🚀 게임 시작</button>
   </div>
 
-  <!-- 3. 게임 실행 / 가위바위보 / 채팅 -->
+  <!-- 3. 채팅 & 게임 진행 영역 -->
   <div class="card" id="chat-card" style="display: none;">
     <div id="game-status" style="text-align:center; font-weight:bold; margin-bottom:8px; color:#4deaea;">⏳ 대기 중</div>
     
-    <!-- 가위바위보 순서 정하기 UI -->
-    <div id="rps-sec" class="rps-sec" style="display: none;">
-      <p style="margin-bottom: 5px; font-weight: bold; color: #ffca28;">✌️✊🖐️ 순서 정하기 가위바위보!</p>
+    <!-- 가위바위보 패널 -->
+    <div id="rps-sec" class="panel-box" style="display: none;">
+      <p style="font-weight: bold; color: #ffca28; margin-bottom: 6px;">✌️✊🖐️ 순서를 정할 가위바위보를 내주세요!</p>
       <div class="rps-btns">
         <button onclick="submitRPS('가위')">✌️ 가위</button>
         <button onclick="submitRPS('바위')">✊ 바위</button>
@@ -220,10 +188,23 @@
       </div>
     </div>
 
+    <!-- 라이어 투표 패널 -->
+    <div id="vote-sec" class="panel-box" style="display: none;">
+      <p style="font-weight: bold; color: #ffca28; margin-bottom: 6px;">🗳️ 라이어라고 생각하는 사람을 지목하세요!</p>
+      <div id="vote-btns" class="rps-btns"></div>
+    </div>
+
+    <!-- 라이어 정답 맞추기 패널 -->
+    <div id="guess-sec" class="panel-box" style="display: none;">
+      <p style="font-weight: bold; color: #ffca28; margin-bottom: 6px;">💡 당신은 라이어로 지목되었습니다! 제시어를 맞춰보세요!</p>
+      <input type="text" id="input-guess" placeholder="제시어 입력" style="margin-bottom: 8px;">
+      <button class="btn-main" style="width: 100%;" onclick="submitLiarGuess()">정답 제출</button>
+    </div>
+
     <div id="timer" style="text-align:center; color:#ff4d4d; font-weight:bold; margin-bottom: 5px;"></div>
     <div id="chat-box"></div>
     <div class="chat-input-sec">
-      <input type="text" id="chat-input" placeholder="메시지 또는 정답 입력" onkeypress="if(event.keyCode==13) sendMessage()">
+      <input type="text" id="chat-input" placeholder="메시지 입력" onkeypress="if(event.keyCode==13) sendMessage()">
       <button onclick="sendMessage()">전송</button>
     </div>
   </div>
@@ -234,24 +215,22 @@
 <script>
   const socket = io();
   let currentRoomId = "";
-  let myUsername = "";
+
+  function createRoom() {
+    const username = document.getElementById('input-username').value.trim();
+    if (!username) return alert("닉네임을 입력하세요!");
+    socket.emit('create_room', { username });
+  }
 
   function joinRoom() {
     const username = document.getElementById('input-username').value.trim();
     const roomId = document.getElementById('input-roomid').value.trim();
-
-    if (!username || !roomId) {
-      alert("닉네임과 방 코드를 모두 입력하세요!");
-      return;
-    }
-
-    myUsername = username;
-    currentRoomId = roomId;
-
+    if (!username || !roomId) return alert("닉네임과 방 코드를 입력하세요!");
     socket.emit('join_room', { roomId, username });
   }
 
-  socket.on('join_success', ({ roomId, username }) => {
+  socket.on('join_success', ({ roomId }) => {
+    currentRoomId = roomId;
     document.getElementById('login-card').style.display = 'none';
     document.getElementById('room-card').style.display = 'block';
     document.getElementById('chat-card').style.display = 'block';
@@ -260,12 +239,10 @@
 
   function onModeChange() {
     const mode = document.getElementById('game-mode').value;
-    
     document.getElementById('option-liar').style.display = (mode === 'liar') ? 'block' : 'none';
     document.getElementById('option-mafia').style.display = (mode === 'mafia') ? 'block' : 'none';
     document.getElementById('option-shiritori').style.display = (mode === 'shiritori') ? 'block' : 'none';
     document.getElementById('option-choseong').style.display = (mode === 'choseong') ? 'block' : 'none';
-
     updateSettings();
   }
 
@@ -294,6 +271,18 @@
     document.getElementById('rps-sec').style.display = 'none';
   }
 
+  function submitVote(targetId) {
+    socket.emit('submit_liar_vote', { roomId: currentRoomId, targetId });
+    document.getElementById('vote-sec').style.display = 'none';
+  }
+
+  function submitLiarGuess() {
+    const guessWord = document.getElementById('input-guess').value.trim();
+    if (!guessWord) return alert("제시어를 입력하세요!");
+    socket.emit('submit_liar_guess', { roomId: currentRoomId, guessWord });
+    document.getElementById('guess-sec').style.display = 'none';
+  }
+
   function sendMessage() {
     const input = document.getElementById('chat-input');
     if (!input.value.trim()) return;
@@ -303,16 +292,12 @@
 
   socket.on('update_room', (data) => {
     document.getElementById('player-count').innerText = data.players.length;
-    
     const hostPlayer = data.players.find(p => p.id === data.host);
-    if (hostPlayer) {
-      document.getElementById('host-name').innerText = hostPlayer.username;
-    }
+    if (hostPlayer) document.getElementById('host-name').innerText = hostPlayer.username;
 
     const isHost = (socket.id === data.host);
     document.getElementById('btn-start').style.display = isHost ? 'block' : 'none';
     document.getElementById('game-mode').disabled = !isHost;
-    document.getElementById('liar-category').disabled = !isHost;
 
     const pNames = data.players.map(p => p.username + (p.id === data.host ? '👑' : '')).join(', ');
     document.getElementById('player-list').innerText = "접속자: " + pNames;
@@ -322,9 +307,37 @@
     document.getElementById('rps-sec').style.display = 'block';
   });
 
-  socket.on('rps_result', ({ orderText }) => {
+  socket.on('start_liar_voting_phase', ({ players }) => {
+    const voteBtns = document.getElementById('vote-btns');
+    voteBtns.innerHTML = '';
+    players.forEach(p => {
+      const btn = document.createElement('button');
+      btn.innerText = p.username;
+      btn.onclick = () => submitVote(p.id);
+      voteBtns.appendChild(btn);
+    });
+    document.getElementById('vote-sec').style.display = 'block';
+  });
+
+  socket.on('prompt_liar_guess', () => {
+    document.getElementById('guess-sec').style.display = 'block';
+  });
+
+  // 순서 연출 애니메이션 적용 부분
+  socket.on('rps_result', ({ orderList }) => {
     const box = document.getElementById('chat-box');
-    box.innerHTML += `<div style="color:#ffca28; font-weight:bold;">${orderText}</div>`;
+    
+    let html = `<div class="order-container">
+      <div class="order-title">🎲 가위바위보 발언 순서</div>
+      <div class="order-badges">`;
+
+    orderList.forEach((player, idx) => {
+      const delay = (idx * 0.15).toFixed(2);
+      html += `<div class="order-badge" style="animation-delay: ${delay}s">${idx + 1}. ${player.username}</div>`;
+    });
+
+    html += `</div></div>`;
+    box.innerHTML += html;
     box.scrollTop = box.scrollHeight;
   });
 
@@ -364,8 +377,7 @@
   socket.on('game_over', ({ winner, loser, reason }) => {
     document.getElementById('timer').innerText = '';
     document.getElementById('game-status').innerText = '게임 종료';
-    if (winner) alert(`🏆 [${winner}]님 승리!`);
-    if (loser) alert(`💀 [${loser}]님 패배! (${reason})`);
+    alert(`🏆 승패 결과: ${winner || '게임 종료'}\n📝 사유: ${reason}`);
   });
 </script>
 </body>
