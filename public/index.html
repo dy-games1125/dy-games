@@ -287,18 +287,14 @@
         `;
       } else if (gameMode === 'shiritori') {
         contentArea.innerHTML = `
-          <p>🗣️ 끝말잇기가 시작되었습니다! 가위바위보 승리자부터 시작합니다 (첫 판 한방단어 금지).</p>
-          <div id="shiritoriTurnNotice" class="turn-highlight" style="text-align:center; margin:10px 0;">가위바위보 진행 중...</div>
-          <div style="display: flex; gap: 5px; margin: 10px 0;">
-            <button class="btn" style="flex:1; background:#3498db; color:white;" onclick="playRPS('rock')">✊ 바위</button>
-            <button class="btn" style="flex:1; background:#e67e22; color:white;" onclick="playRPS('paper')">✋ 보</button>
-            <button class="btn" style="flex:1; background:#e74c3c; color:white;" onclick="playRPS('scissors')">✌️ 가위</button>
-          </div>
+          <p>🗣️ 끝말잇기가 시작되었습니다! 가위바위보로 순서 정하기 진행 중...</p>
+          <div id="shiritoriTurnNotice" class="turn-highlight" style="text-align:center; margin:10px 0;">가위바위보 순서 정하기 진행 중...</div>
+          <button class="btn btn-success" onclick="alert('가위바위보 기능 연동 중')">✌️ 가위바위보 하기</button>
           <div style="background:#2e1e17; padding:10px; border-radius:6px; margin:10px 0; text-align:center;">
             <p>입력한 단어: <strong id="currentWord" style="color:#f39c12; font-size:1.2rem;">없음</strong></p>
           </div>
           <div class="row" style="gap:5px;">
-            <input type="text" id="shiritoriInput" placeholder="단어 입력" style="flex:1;" onkeypress="if(event.keyCode==13) submitShiritori()">
+            <input type="text" id="shiritoriInput" placeholder="단어 입력 (첫 판만 한방단어 금지)" style="flex:1;" onkeypress="if(event.keyCode==13) submitShiritori()">
             <button class="btn" style="background:#10ac84; color:white; padding:8px 12px;" onclick="submitShiritori()">입력</button>
           </div>
         `;
@@ -306,11 +302,7 @@
         contentArea.innerHTML = `
           <p>🕵️ 라이어 게임이 시작되었습니다!</p>
           <div id="liarTurnNotice" class="turn-highlight" style="text-align:center; margin:10px 0;">가위바위보 순서 정하기 진행 중...</div>
-          <div style="display: flex; gap: 5px; margin: 10px 0;">
-            <button class="btn" style="flex:1; background:#3498db; color:white;" onclick="playRPS('rock')">✊ 바위</button>
-            <button class="btn" style="flex:1; background:#e67e22; color:white;" onclick="playRPS('paper')">✋ 보</button>
-            <button class="btn" style="flex:1; background:#e74c3c; color:white;" onclick="playRPS('scissors')">✌️ 가위</button>
-          </div>
+          <button class="btn btn-success" onclick="alert('가위바위보 기능 연동 중')">✌️ 가위바위보 하기</button>
         `;
       } else if (gameMode === 'mafia') {
         contentArea.innerHTML = `
@@ -321,13 +313,6 @@
         `;
       }
     });
-
-    function playRPS(choice) {
-      const choices = { rock: '바위', paper: '보', scissors: '가위' };
-      alert(`가위바위보 선택 완료: ${choices[choice]}`);
-      const notice = document.getElementById('shiritoriTurnNotice') || document.getElementById('liarTurnNotice');
-      if (notice) notice.innerText = `가위바위보 완료! 승리자부터 시작합니다.`;
-    }
 
     function submitChoseong() {
       const val = document.getElementById('choseongAnswerInput').value;
