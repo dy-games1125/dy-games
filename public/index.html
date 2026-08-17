@@ -3,374 +3,182 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>라이어 게임</title>
+  <title>학교 파티웹게임 4종 모음집</title>
   <script src="/socket.io/socket.io.js"></script>
   <style>
     * { box-sizing: border-box; }
-    
-    body {
-      background: url('images.jpg') no-repeat center center fixed;
-      background-size: cover;
-      font-family: 'Malgun Gothic', sans-serif;
-      padding: 20px;
-      max-width: 550px;
-      margin: 0 auto;
-      color: #fff8e7;
-    }
-
-    .card {
-      background: rgba(60, 35, 18, 0.88);
-      border: 4px solid #2d180c;
-      box-shadow: inset 0 0 10px rgba(0,0,0,0.8), 0 8px 16px rgba(0,0,0,0.7);
-      border-radius: 12px;
-      padding: 20px;
-      margin-bottom: 15px;
-      backdrop-filter: blur(2px);
-    }
-
-    #chat-box {
-      height: 200px;
-      border: 2px solid #2d180c;
-      overflow-y: auto;
-      padding: 10px;
-      border-radius: 8px;
-      background: rgba(20, 10, 5, 0.85);
-      margin-bottom: 10px;
-    }
-
+    body { background: #1a100c; font-family: 'Malgun Gothic', sans-serif; padding: 20px; max-width: 550px; margin: 0 auto; color: #fff8e7; }
+    .card { background: rgba(60, 35, 18, 0.92); border: 4px solid #2d180c; box-shadow: 0 8px 16px rgba(0,0,0,0.7); border-radius: 12px; padding: 20px; margin-bottom: 15px; }
+    #chat-box { height: 220px; border: 2px solid #2d180c; overflow-y: auto; padding: 10px; border-radius: 8px; background: rgba(20, 10, 5, 0.85); margin-bottom: 10px; }
     .msg { margin-bottom: 8px; word-break: break-all; }
     .msg.system { color: #f39c12; font-size: 0.9em; font-style: italic; }
-    .msg.word { font-weight: bold; color: #a3e635; }
-
-    .rps-btns { display: flex; justify-content: center; gap: 10px; margin: 15px 0; }
-    .rps-btns button {
-      font-size: 1.2rem;
-      padding: 12px 20px;
-      cursor: pointer;
-      border-radius: 8px;
-      border: 2px solid #2d180c;
-      background: #8c532b;
-      color: #fff;
-      font-weight: bold;
-    }
-
     .timer { font-size: 1.1rem; color: #ef4444; font-weight: bold; text-align: center; margin-bottom: 8px; }
-    
-    input[type="text"] {
-      padding: 10px;
-      border: 2px solid #2d180c;
-      border-radius: 6px;
-      font-size: 0.95rem;
-      background: #fef3c7;
-      color: #1e1007;
-      font-weight: bold;
-    }
-
-    button.btn {
-      padding: 10px;
-      background: #8c532b;
-      color: #fff;
-      border: 2px solid #2d180c;
-      border-radius: 6px;
-      font-weight: bold;
-      cursor: pointer;
-    }
-
-    button.btn:hover { background: #a66334; }
-    button.btn:disabled { background: #523b2b; cursor: not-allowed; opacity: 0.6; }
-    .btn-danger { background: #dc2626 !important; }
-
-    .code-box { background: #2a160a; padding: 6px 10px; border-radius: 6px; font-weight: bold; color: #f59e0b; }
-    .vote-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
-    .vote-btn {
-      padding: 12px;
-      background: #8c532b;
-      color: #fff;
-      border: 2px solid #2d180c;
-      border-radius: 8px;
-      font-weight: bold;
-      cursor: pointer;
-      text-align: center;
-    }
-
-    #gold-banner {
-      position: fixed;
-      top: 40%;
-      left: 50%;
-      transform: translate(-50%, -50%) scale(0);
-      background: linear-gradient(135deg, #bf953f, #fcf6ba, #b38728, #fbf5b7);
-      color: #3a2002;
-      padding: 20px 40px;
-      border-radius: 20px;
-      box-shadow: 0 0 30px rgba(255, 215, 0, 0.9), inset 0 0 10px #ffffff;
-      font-size: 2rem;
-      font-weight: 900;
-      text-align: center;
-      z-index: 9999;
-      pointer-events: none;
-      border: 4px solid #fff;
-      text-shadow: 1px 1px 2px rgba(255,255,255,0.8);
-      transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.27), opacity 0.4s;
-      opacity: 0;
-    }
-
-    #gold-banner.show {
-      transform: translate(-50%, -50%) scale(1.1);
-      opacity: 1;
-    }
+    input[type="text"], input[type="number"], select { padding: 8px; border: 2px solid #2d180c; border-radius: 6px; font-size: 0.9rem; background: #fef3c7; color: #1e1007; font-weight: bold; }
+    button.btn { padding: 10px; background: #8c532b; color: #fff; border: 2px solid #2d180c; border-radius: 6px; font-weight: bold; cursor: pointer; }
+    .player-row { display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px dashed rgba(140, 83, 43, 0.4); }
+    #quiz-banner { background: #d97706; padding: 12px; border-radius: 8px; text-align: center; font-size: 1.2rem; font-weight: bold; margin-bottom: 10px; display: none; }
   </style>
 </head>
 <body>
 
-  <div id="gold-banner"></div>
-
   <div class="card" id="login-section">
-    <h3 style="margin-top:0; color:#f59e0b;">🪵 라이어 게임 입장</h3>
+    <h3 style="margin-top:0; color:#f59e0b;">🪵 로비 입장</h3>
     <input type="text" id="nickname" placeholder="닉네임 입력" style="width: 100%; margin-bottom: 12px;">
-    
-    <div style="display: flex; gap: 8px;">
-      <button onclick="createRoom()" class="btn" style="flex: 1; background: #059669;">방 만들기</button>
-    </div>
-    
+    <button onclick="createRoom()" class="btn" style="width: 100%; background: #059669;">방 만들기</button>
     <hr style="border: 0; border-top: 1px solid #3b2314; margin: 15px 0;">
-    
     <div style="display: flex; gap: 8px;">
       <input type="text" id="room-code-input" placeholder="방 코드 4자리" style="flex: 1;">
-      <button onclick="joinRoom()" class="btn" style="flex: 1;">방 코드로 입장</button>
+      <button onclick="joinRoom()" class="btn" style="flex: 1;">입장하기</button>
     </div>
   </div>
 
   <div class="card" id="game-section" style="display: none;">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 12px;">
-      <h3 style="margin:0;">👥 접속 플레이어</h3>
-      <div>코드: <span class="code-box" id="display-room-code">----</span></div>
+      <h3 style="margin:0;">👥 플레이어 (최대 18명)</h3>
+      <div>코드: <span id="display-room-code" style="color:#f59e0b; font-weight:bold;">----</span></div>
     </div>
     <div id="player-list"></div>
+
+    <div id="host-controls" style="display: none; margin-top: 15px; border-top: 1px dashed #8c532b; padding-top: 10px;">
+      <label><b>🎮 게임 모드 선택: </b></label>
+      <select id="mode-select" onchange="changeMode()">
+        <option value="LIAR">라이어 게임</option>
+        <option value="MAFIA">마피아 게임 (6~18명)</option>
+        <option value="WORDCHAIN">끝말잇기</option>
+        <option value="INITIAL">초성 스피드 퀴즈</option>
+      </select>
+
+      <!-- 라이어 옵션 -->
+      <div id="option-liar" class="opt-box" style="margin-top:8px;">
+        <label>카테고리: </label>
+        <select id="liar-cat" onchange="updateSettings()">
+          <option value="음식">음식</option><option value="동물">동물</option><option value="장소">장소</option>
+        </select>
+      </div>
+
+      <!-- 마피아 옵션 -->
+      <div id="option-mafia" class="opt-box" style="display:none; margin-top:8px;">
+        <label>낮 시간: </label>
+        <input type="number" id="mafia-day" value="60" style="width:50px;" onchange="updateSettings()">초
+      </div>
+
+      <!-- 끝말잇기 옵션 -->
+      <div id="option-chain" class="opt-box" style="display:none; margin-top:8px;">
+        <label>턴 시간: </label>
+        <select id="chain-time" onchange="updateSettings()">
+          <option value="10">10초</option><option value="15" selected>15초</option><option value="20">20초</option>
+        </select>
+        <label style="margin-left:8px;">최소 글자수: </label>
+        <select id="chain-len" onchange="updateSettings()">
+          <option value="2">2글자</option><option value="3">3글자</option>
+        </select>
+      </div>
+
+      <!-- 초성 게임 옵션 (목표점수 6점 ~ 20점 설정) -->
+      <div id="option-initial" class="opt-box" style="display:none; margin-top:8px;">
+        <label>승리 목표 점수: </label>
+        <input type="number" id="target-score" value="6" min="6" max="20" style="width:50px;" onchange="updateSettings()">점
+      </div>
+    </div>
+
     <br>
-    <div style="display: flex; gap: 8px;">
-      <button id="start-rps-btn" onclick="startRPS()" class="btn" style="flex: 2; background: #059669;">
-        ✌️✊🖐️ 가위바위보 시작
-      </button>
-      <button onclick="leaveRoom()" class="btn btn-danger" style="flex: 1;">🚪 나가기</button>
-    </div>
-  </div>
-
-  <div class="card" id="rps-section" style="display: none; text-align: center;">
-    <h3 style="margin-top:0;">✌️✊🖐️ 가위, 바위, 보!</h3>
-    <div class="timer" id="timer-display">⏳ 제한시간: 25초</div>
-    <div class="rps-btns">
-      <button onclick="submitRPS('가위')">✌️ 가위</button>
-      <button onclick="submitRPS('바위')">✊ 바위</button>
-      <button onclick="submitRPS('보')">🖐️ 보</button>
-    </div>
-    <p id="rps-status" style="color: #fca5a5; margin-bottom: 0;"></p>
-  </div>
-
-  <div class="card" id="vote-section" style="display: none;">
-    <h3 style="margin-top:0; text-align: center;">🕵️ 누가 라이어인가요?</h3>
-    <div class="timer" id="vote-timer-display">⏳ 제한시간: 25초</div>
-    <div class="vote-grid" id="vote-options"></div>
-  </div>
-
-  <div class="card" id="guess-section" style="display: none;">
-    <h3 style="margin-top:0; text-align: center;">🎯 제시어를 맞혀보세요!</h3>
-    <div class="timer" id="guess-timer-display">⏳ 제한시간: 25초</div>
-    <div style="display: flex; gap: 5px;">
-      <input type="text" id="guess-input" placeholder="제시어 입력" style="flex: 1;">
-      <button class="btn" onclick="submitAnswer()" style="width: 80px;">제출</button>
-    </div>
+    <button onclick="startGame()" class="btn" style="width: 100%; background: #059669;">🚀 게임 시작</button>
   </div>
 
   <div class="card" id="play-section" style="display: none;">
-    <div class="timer" id="play-timer-display">⏳ 제한시간: 25초</div>
-    <div id="turn-info" style="text-align: center; font-weight: bold; margin-bottom: 10px; color: #fef08a;">순서를 정하는 중입니다...</div>
+    <div class="timer" id="timer-display">⏳ 대기 중</div>
+    <div id="quiz-banner">주제: <span id="quiz-cat"></span> | 초성: <span id="quiz-initial"></span></div>
 
     <div id="chat-box"></div>
 
     <div style="display: flex; gap: 5px;">
-      <input type="text" id="word-input" placeholder="채팅창에는 단어를 입력해주세요" disabled style="flex: 1;" onkeyup="if(event.keyCode===13) sendWord()">
-      <button class="btn" id="send-btn" onclick="sendWord()" disabled style="width: 80px;">전송</button>
+      <input type="text" id="word-input" placeholder="정답/단어 입력" style="flex: 1;" onkeyup="if(event.keyCode===13) sendWord()">
+      <button class="btn" onclick="sendWord()" style="width: 80px;">전송</button>
     </div>
   </div>
 
   <script>
     const socket = io();
-    let myId = '';
+    let isHost = false;
 
     function createRoom() {
       const name = document.getElementById('nickname').value;
-      if (!name.trim()) return alert('닉네임을 입력해 주세요.');
-      socket.emit('create_room', name);
+      if (name.trim()) socket.emit('create_room', name);
     }
 
     function joinRoom() {
       const name = document.getElementById('nickname').value;
       const code = document.getElementById('room-code-input').value;
-      if (!name.trim()) return alert('닉네임을 입력해 주세요.');
-      if (!code.trim()) return alert('방 코드를 입력해 주세요.');
-      socket.emit('join_room', { nickname: name, roomCode: code });
+      if (name.trim() && code.trim()) socket.emit('join_room', { nickname: name, roomCode: code });
     }
 
-    function leaveRoom() {
-      socket.emit('leave_room');
-      document.getElementById('game-section').style.display = 'none';
-      document.getElementById('play-section').style.display = 'none';
-      document.getElementById('rps-section').style.display = 'none';
-      document.getElementById('vote-section').style.display = 'none';
-      document.getElementById('guess-section').style.display = 'none';
-      document.getElementById('login-section').style.display = 'block';
+    function changeMode() {
+      if (!isHost) return;
+      socket.emit('change_game_mode', document.getElementById('mode-select').value);
     }
 
-    function startRPS() { socket.emit('start_rps'); }
-
-    function submitRPS(choice) {
-      socket.emit('submit_rps', choice);
-      document.getElementById('rps-status').innerText = `선택 완료: ${choice}`;
-      document.querySelectorAll('.rps-btns button').forEach(btn => btn.disabled = true);
+    function updateSettings() {
+      if (!isHost) return;
+      socket.emit('update_settings', {
+        category: document.getElementById('liar-cat').value,
+        mafiaDayTime: document.getElementById('mafia-day').value,
+        chainTimeLimit: document.getElementById('chain-time').value,
+        chainMinLength: document.getElementById('chain-len').value,
+        targetScore: document.getElementById('target-score').value
+      });
     }
+
+    function startGame() { socket.emit('start_game_request'); }
 
     function sendWord() {
       const input = document.getElementById('word-input');
-      if (input.value.trim() !== '') {
+      if (input.value.trim()) {
         socket.emit('send_word', input.value.trim());
         input.value = '';
       }
     }
 
-    function submitVote(targetId) {
-      socket.emit('submit_vote', targetId);
-      document.getElementById('vote-section').style.display = 'none';
-      addMessage('system', '투표를 완료했습니다.');
-    }
+    socket.on('room_created', (data) => showGameUI(data));
+    socket.on('room_joined', (data) => showGameUI(data));
 
-    function submitAnswer() {
-      const input = document.getElementById('guess-input');
-      if (input.value.trim() !== '') {
-        socket.emit('submit_answer', input.value.trim());
-        input.value = '';
-      }
-    }
-
-    function showGoldBanner(text) {
-      const banner = document.getElementById('gold-banner');
-      banner.innerHTML = text;
-      banner.classList.add('show');
-      setTimeout(() => {
-        banner.classList.remove('show');
-      }, 2000);
-    }
-
-    socket.on('connect', () => { myId = socket.id; });
-
-    socket.on('room_created', (data) => {
-      document.getElementById('display-room-code').innerText = data.roomCode;
-      showGameUI();
-    });
-
-    socket.on('room_joined', (data) => {
-      document.getElementById('display-room-code').innerText = data.roomCode;
-      showGameUI();
-    });
-
-    function showGameUI() {
+    function showGameUI(data) {
+      isHost = data.isHost;
       document.getElementById('login-section').style.display = 'none';
       document.getElementById('game-section').style.display = 'block';
       document.getElementById('play-section').style.display = 'block';
+      document.getElementById('display-room-code').innerText = data.roomCode;
     }
 
-    socket.on('system_message', (msg) => { addMessage('system', `[안내] ${msg}`); });
+    socket.on('game_mode_changed', (mode) => {
+      document.querySelectorAll('.opt-box').forEach(el => el.style.display = 'none');
+      if (mode === 'LIAR') document.getElementById('option-liar').style.display = 'block';
+      if (mode === 'MAFIA') document.getElementById('option-mafia').style.display = 'block';
+      if (mode === 'WORDCHAIN') document.getElementById('option-chain').style.display = 'block';
+      if (mode === 'INITIAL') document.getElementById('option-initial').style.display = 'block';
+    });
 
     socket.on('player_list_update', (data) => {
-      document.getElementById('player-list').innerHTML = data.players.map(p => `• ${p.name}`).join('<br>');
+      isHost = (data.hostId === socket.id);
+      document.getElementById('host-controls').style.display = isHost ? 'block' : 'none';
+      
+      const listHtml = data.players.map(p => {
+        let tag = p.id === data.hostId ? '👑 ' : '• ';
+        return `<div class="player-row"><span>${tag}${p.name}</span><span>점수: ${p.score || 0}점</span></div>`;
+      }).join('');
+      document.getElementById('player-list').innerHTML = listHtml;
     });
+
+    socket.on('initial_quiz_show', (data) => {
+      document.getElementById('quiz-banner').style.display = 'block';
+      document.getElementById('quiz-cat').innerText = data.category;
+      document.getElementById('quiz-initial').innerText = data.initial;
+    });
+
+    socket.on('system_message', (msg) => addMessage('system', msg));
+    socket.on('receive_word', (data) => addMessage('chat', `<b>${data.sender}</b>: ${data.word}`));
 
     socket.on('timer_tick', (timeLeft) => {
-      document.getElementById('timer-display').innerText = `⏳ 제한시간: ${timeLeft}초`;
-      document.getElementById('play-timer-display').innerText = `⏳ 제한시간: ${timeLeft}초`;
-      document.getElementById('vote-timer-display').innerText = `⏳ 제한시간: ${timeLeft}초`;
-      document.getElementById('guess-timer-display').innerText = `⏳ 제한시간: ${timeLeft}초`;
-    });
-
-    socket.on('rps_started', (msg) => {
-      document.getElementById('start-rps-btn').disabled = true;
-      document.getElementById('rps-section').style.display = 'block';
-      document.getElementById('vote-section').style.display = 'none';
-      document.getElementById('guess-section').style.display = 'none';
-      document.getElementById('rps-status').innerText = '';
-      document.querySelectorAll('.rps-btns button').forEach(btn => btn.disabled = false);
-      addMessage('system', msg);
-    });
-
-    socket.on('rps_result', (data) => {
-      document.getElementById('rps-section').style.display = 'none';
-      let resultText = `👑 <b>승자: ${data.winner.name}</b><br><b>[순서]</b><br>`;
-      data.order.forEach((p, idx) => { resultText += `${idx + 1}번: ${p.name}<br>`; });
-      addMessage('system', resultText);
-    });
-
-    socket.on('turn_update', (data) => {
-      const turnDiv = document.getElementById('turn-info');
-      const input = document.getElementById('word-input');
-      const sendBtn = document.getElementById('send-btn');
-
-      // 동점 후 복귀 시에도 투표 창 숨기기 처리
-      document.getElementById('vote-section').style.display = 'none';
-
-      showGoldBanner(`✨ ${data.currentPlayer} 스타트! ✨`);
-
-      if (data.currentPlayerId === myId) {
-        turnDiv.innerText = `🎯 나의 순서입니다! 단어를 입력해 주세요.`;
-        input.disabled = false;
-        sendBtn.disabled = false;
-        input.focus();
-      } else {
-        turnDiv.innerText = `⏳ 현재 순서: ${data.currentPlayer}`;
-        input.disabled = true;
-        sendBtn.disabled = true;
-      }
-    });
-
-    socket.on('receive_word', (data) => {
-      addMessage('word', `${data.sender}: ${data.word}`);
-    });
-
-    socket.on('start_voting', (data) => {
-      const voteSection = document.getElementById('vote-section');
-      const voteOptions = document.getElementById('vote-options');
-      voteOptions.innerHTML = '';
-
-      data.players.forEach(p => {
-        if (p.id !== myId) {
-          const btn = document.createElement('button');
-          btn.className = 'vote-btn';
-          btn.innerText = p.name;
-          btn.onclick = () => submitVote(p.id);
-          voteOptions.appendChild(btn);
-        }
-      });
-
-      voteSection.style.display = 'block';
-      addMessage('system', '🗳️ 라이어라고 생각하는 사람을 선택해 주세요!');
-    });
-
-    socket.on('liar_caught', (data) => {
-      document.getElementById('vote-section').style.display = 'none';
-      if (data.liarId === myId) {
-        document.getElementById('guess-section').style.display = 'block';
-        addMessage('system', '🚨 제시어를 맞혀주세요!');
-      } else {
-        addMessage('system', `🚨 라이어 [ ${data.liarName} ]님이 적발되었습니다!`);
-      }
-    });
-
-    socket.on('game_over', (data) => {
-      document.getElementById('guess-section').style.display = 'none';
-      document.getElementById('vote-section').style.display = 'none';
-      addMessage('system', `<b>[게임 종료]</b> ${data.message}`);
-    });
-
-    socket.on('reset_to_waiting', () => {
-      document.getElementById('start-rps-btn').disabled = false;
+      document.getElementById('timer-display').innerText = `⏳ ${timeLeft}초`;
     });
 
     function addMessage(type, text) {
