@@ -20,7 +20,7 @@
     }
     #app {
       width: 100%;
-      max-width: 450px;
+      max-width: 480px;
       display: flex;
       flex-direction: column;
       gap: 15px;
@@ -38,11 +38,16 @@
     .btn-success { background-color: #10ac84; color: white; width: 100%; padding: 12px; font-size: 16px; margin-top: 10px; }
     input, select { background: #fffde8; border: 1px solid #ccc; padding: 8px 10px; border-radius: 6px; color: #333; font-size: 14px; width: 100%; }
     .row { margin: 10px 0; display: flex; align-items: center; gap: 8px; }
-    .row label { white-space: nowrap; font-size: 14px; }
-    .chat-box { background: #1e130e; height: 150px; border-radius: 8px; padding: 10px; overflow-y: auto; color: #ffab76; font-size: 14px; }
+    .row label { white-space: nowrap; font-size: 13px; min-width: 85px; }
+    .chat-box { background: #1e130e; height: 140px; border-radius: 8px; padding: 10px; overflow-y: auto; color: #ffab76; font-size: 13px; }
+    .turn-highlight { background: #f39c12 !important; color: #000; animation: pulse 1s infinite; font-weight: bold; }
+    @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.6; } 100% { opacity: 1; } }
+    .rank-bronze { background: #cd7f32; padding: 10px; border-radius: 8px; margin: 5px 0; color: #000; font-weight: bold; }
+    .rank-silver { background: #c0c0c0; padding: 10px; border-radius: 8px; margin: 5px 0; color: #000; font-weight: bold; }
+    .rank-gold { background: #ffd700; padding: 10px; border-radius: 8px; margin: 5px 0; color: #000; font-weight: bold; font-size: 1.1rem; box-shadow: 0 0 10px #ffd700; }
     h2 { font-size: 1.2rem; margin: 0 0 10px 0; }
     h3 { font-size: 1rem; margin: 0 0 8px 0; }
-    p { margin: 8px 0; font-size: 14px; }
+    p { margin: 6px 0; font-size: 13px; }
   </style>
 </head>
 <body>
@@ -51,23 +56,19 @@
     <!-- 로그인 화면 -->
     <div id="loginView" class="card">
       <h2>🎮 미니게임 천국</h2>
-      <div class="row">
-        <input type="text" id="usernameInput" placeholder="닉네임 입력">
-      </div>
-      <div class="row">
-        <button class="btn btn-success" style="margin-top:0;" onclick="createRoom()">방 만들기</button>
-      </div>
+      <div class="row"><input type="text" id="usernameInput" placeholder="닉네임 입력"></div>
+      <div class="row"><button class="btn btn-success" style="margin-top:0;" onclick="createRoom()">방 만들기</button></div>
       <div class="row" style="gap:5px;">
         <input type="text" id="roomCodeInput" placeholder="방 코드 6자리" style="flex:1;">
         <button class="btn" style="background:#8c5338; color:white; padding:8px 12px;" onclick="joinRoom()">입장</button>
       </div>
     </div>
 
-    <!-- 게임 방 화면 -->
+    <!-- 대기실 화면 -->
     <div id="roomView" class="card" style="display: none;">
       <div class="header">
         <h2>🏠 방 코드: <span id="roomCodeDisplay">-</span></h2>
-        <button id="leaveBtn" class="btn btn-danger" style="padding:6px 10px; font-size:12px;" onclick="leaveRoom()">방 나가기</button>
+        <button class="btn btn-danger" style="padding:6px 10px; font-size:12px;" onclick="leaveRoom()">방 나가기</button>
       </div>
       <p>👥 인원: <span id="playerCount">0</span>명</p>
       <p>접속자: <span id="playerList">-</span></p>
@@ -76,45 +77,40 @@
       <div class="row">
         <label>🎮 모드:</label>
         <select id="gameModeSelect" onchange="onModeChange()">
-          <option value="mafia">마피아 게임 (6명 이상)</option>
-          <option value="liar">라이어 게임 (3명 이상)</option>
-          <option value="shiritori">끝말잇기 (2명 이상)</option>
-          <option value="choseong">초성 퀴즈 (2명 이상)</option>
+          <option value="liar">라이어 게임 (3~18명)</option>
+          <option value="mafia">마피아 게임 (6~18명)</option>
+          <option value="shiritori">끝말잇기 (2~8명)</option>
+          <option value="choseong">초성 퀴즈 (2~8명)</option>
         </select>
       </div>
 
-      <!-- 마피아 세부 설정 -->
-      <div id="mafiaOptions" style="display: none;">
-        <div class="row">
-          <label>🕵️ 마피아 수:</label>
-          <select id="mafiaCountSelect" onchange="onMafiaSettingChange()">
-            <option value="1">1명</option>
-            <option value="2">2명</option>
-            <option value="3">3명</option>
-          </select>
-        </div>
-      </div>
-
-      <!-- 라이어 게임 세부 설정 -->
-      <div id="liarOptions" style="display: none;">
-        <div class="row">
-          <label>📂 카테고리:</label>
-          <select id="liarCategorySelect" onchange="onLiarSettingChange()">
-            <option value="all">랜덤 (전체)</option>
-            <option value="음식">음식</option>
-            <option value="동물">동물</option>
-            <option value="장소">장소</option>
-            <option value="물건">물건</option>
-          </select>
-        </div>
+      <!-- 모드별 상세 옵션 설정 (방장 전용) -->
+      <div id="gameOptionsContainer" style="background: #2e1e17; padding: 10px; border-radius: 8px; margin-top: 10px;">
+        <!-- 동적 삽입 -->
       </div>
 
       <button id="startBtn" class="btn btn-success" onclick="startGame()">🚀 게임 시작</button>
+      <button id="endGameBtn" class="btn btn-danger" style="display:none; width:100%; margin-top:10px;" onclick="endGame()">🏁 게임 종료 (결과 확인)</button>
+    </div>
+
+    <!-- 게임 플레이 화면 영역 -->
+    <div id="gamePlayView" class="card" style="display: none;">
+      <h3 id="gameTitle">게임 진행 중</h3>
+      <div id="gameContentArea">
+        <!-- 각 게임별 인게임 UI가 여기에 렌더링됨 -->
+      </div>
+    </div>
+
+    <!-- 순위 및 점수 공개 화면 -->
+    <div id="rankingView" class="card" style="display: none; text-align: center;">
+      <h2>🏆 최종 게임 결과</h2>
+      <div id="rankingListContainer"></div>
+      <button class="btn btn-success" onclick="location.reload()">대기실로 돌아가기</button>
     </div>
 
     <!-- 채팅창 화면 -->
     <div id="chatCard" class="card" style="display: none;">
-      <h3>💬 대기실 채팅</h3>
+      <h3>💬 실시간 채팅 <span id="chatBadge" style="font-size:11px; color:#10ac84;"></span></h3>
       <div id="chatBox" class="chat-box"></div>
       <div class="row" style="margin-top: 10px; margin-bottom:0; gap:5px;">
         <input type="text" id="msgInput" style="flex: 1;" placeholder="메시지 입력" onkeypress="if(event.keyCode==13) sendMsg()">
@@ -126,6 +122,7 @@
   <script>
     const socket = io();
     let currentRoomId = null;
+    let currentRoomData = null;
 
     function createRoom() {
       const username = document.getElementById('usernameInput').value.trim();
@@ -152,18 +149,33 @@
       socket.emit('change_game_mode', { roomId: currentRoomId, gameMode: mode });
     }
 
-    function onMafiaSettingChange() {
-      const mafiaCount = document.getElementById('mafiaCountSelect').value;
-      socket.emit('change_mafia_settings', { roomId: currentRoomId, mafiaCount });
-    }
-
-    function onLiarSettingChange() {
-      const liarCategory = document.getElementById('liarCategorySelect').value;
-      socket.emit('change_liar_settings', { roomId: currentRoomId, liarCategory });
+    function updateOptionsToServer() {
+      const mode = document.getElementById('gameModeSelect').value;
+      let options = {};
+      if (mode === 'liar') {
+        options.liarTime = parseInt(document.getElementById('optLiarTime').value);
+        options.liarCategory = document.getElementById('optLiarCategory').value;
+      } else if (mode === 'mafia') {
+        options.mafiaDayTime = parseInt(document.getElementById('optMafiaDayTime').value);
+        options.mafiaCount = parseInt(document.getElementById('optMafiaCount').value);
+        options.policeCount = parseInt(document.getElementById('optPoliceCount').value);
+        options.doctorCount = parseInt(document.getElementById('optDoctorCount').value);
+      } else if (mode === 'shiritori') {
+        options.shiritoriMinLen = parseInt(document.getElementById('optShiritoriMinLen').value);
+      } else if (mode === 'choseong') {
+        options.choseongTargetScore = parseInt(document.getElementById('optChoseongTarget').value);
+      }
+      socket.emit('update_options', { roomId: currentRoomId, options });
     }
 
     function startGame() {
       socket.emit('start_game', { roomId: currentRoomId });
+    }
+
+    function endGame() {
+      if (confirm('게임을 종료하고 최종 점수와 등수를 공개하시겠습니까?')) {
+        socket.emit('end_game_by_host', { roomId: currentRoomId });
+      }
     }
 
     function sendMsg() {
@@ -186,31 +198,108 @@
       box.scrollTop = box.scrollHeight;
     });
 
-    socket.on('receive_message', ({ username, message }) => {
+    socket.on('receive_message', ({ username, message, isDead }) => {
       const box = document.getElementById('chatBox');
-      box.innerHTML += `<div><strong>${username}:</strong> ${message}</div>`;
+      const prefix = isDead ? '💀 [관전]' : '';
+      box.innerHTML += `<div><strong>${prefix}${username}:</strong> ${message}</div>`;
       box.scrollTop = box.scrollHeight;
     });
 
     socket.on('update_room', (data) => {
-      currentRoomId = data.roomId;
+      currentRoomData = data;
       document.getElementById('roomCodeDisplay').innerText = data.roomId;
       document.getElementById('playerCount').innerText = data.players.length;
-      document.getElementById('playerList').innerText = data.players.map(p => p.username + (p.id === data.host ? ' 👑' : '')).join(', ');
+      document.getElementById('playerList').innerText = data.players.map(p => p.username + (p.id === data.host ? ' 👑' : '') + (p.isDead ? ' (죽음)' : '')).join(', ');
 
       const isHost = socket.id === data.host;
       document.getElementById('gameModeSelect').disabled = !isHost;
-      document.getElementById('mafiaCountSelect').disabled = !isHost;
-      document.getElementById('liarCategorySelect').disabled = !isHost;
-      document.getElementById('startBtn').style.display = isHost ? 'block' : 'none';
-      
+      document.getElementById('startBtn').style.display = (isHost && !data.gameStarted) ? 'block' : 'none';
+      document.getElementById('endGameBtn').style.display = (isHost && data.gameStarted) ? 'block' : 'none';
       document.getElementById('gameModeSelect').value = data.gameMode;
-      document.getElementById('mafiaCountSelect').value = data.mafiaCount || 1;
-      document.getElementById('liarCategorySelect').value = data.liarCategory || 'all';
 
-      // 모드별 설정 화면 토글
-      document.getElementById('mafiaOptions').style.display = (data.gameMode === 'mafia') ? 'block' : 'none';
-      document.getElementById('liarOptions').style.display = (data.gameMode === 'liar') ? 'block' : 'none';
+      renderOptionsUI(data.gameMode, data.options, isHost);
+    });
+
+    function renderOptionsUI(mode, opt, isHost) {
+      const container = document.getElementById('gameOptionsContainer');
+      let html = '';
+      if (mode === 'liar') {
+        html = `
+          <div class="row"><label>⏱️ 제한시간:</label><select id="optLiarTime" ${!isHost?'disabled':''} onchange="updateOptionsToServer()">
+            <option value="15" ${opt.liarTime==15?'selected':''}>15초</option>
+            <option value="25" ${opt.liarTime==25?'selected':''}>25초 (기본)</option>
+            <option value="40" ${opt.liarTime==40?'selected':''}>40초</option>
+          </select></div>
+          <div class="row"><label>📂 카테고리:</label><select id="optLiarCategory" ${!isHost?'disabled':''} onchange="updateOptionsToServer()">
+            <option value="all" ${opt.liarCategory==='all'?'selected':''}>랜덤 (전체)</option>
+            <option value="음식" ${opt.liarCategory==='음식'?'selected':''}>음식</option>
+            <option value="동물" ${opt.liarCategory==='동물'?'selected':''}>동물</option>
+            <option value="장소" ${opt.liarCategory==='장소'?'selected':''}>장소</option>
+            <option value="물건" ${opt.liarCategory==='물건'?'selected':''}>물건</option>
+          </select></div>`;
+      } else if (mode === 'mafia') {
+        html = `
+          <div class="row"><label>⏳ 추리시간:</label><select id="optMafiaDayTime" ${!isHost?'disabled':''} onchange="updateOptionsToServer()">
+            <option value="45" ${opt.mafiaDayTime==45?'selected':''}>45초</option>
+            <option value="60" ${opt.mafiaDayTime==60?'selected':''}>60초 (기본)</option>
+            <option value="120" ${opt.mafiaDayTime==120?'selected':''}>120초</option>
+          </select></div>
+          <div class="row"><label>🕵️ 마피아수:</label><select id="optMafiaCount" ${!isHost?'disabled':''} onchange="updateOptionsToServer()">
+            <option value="1">1명</option><option value="2">2명</option><option value="3">3명</option>
+          </select></div>
+          <div class="row"><label>👮 경찰수:</label><select id="optPoliceCount" ${!isHost?'disabled':''} onchange="updateOptionsToServer()">
+            <option value="1">1명</option><option value="2">2명</option>
+          </select></div>
+          <div class="row"><label>💉 의사수:</label><select id="optDoctorCount" ${!isHost?'disabled':''} onchange="updateOptionsToServer()">
+            <option value="1">1명</option><option value="2">2명</option>
+          </select></div>`;
+      } else if (mode === 'shiritori') {
+        html = `
+          <div class="row"><label>🔤 최소글자:</label><select id="optShiritoriMinLen" ${!isHost?'disabled':''} onchange="updateOptionsToServer()">
+            <option value="2" ${opt.shiritoriMinLen==2?'selected':''}>2글자 이상 (기본)</option>
+            <option value="3" ${opt.shiritoriMinLen==3?'selected':''}>3글자 이상</option>
+          </select></div>`;
+      } else if (mode === 'choseong') {
+        html = `
+          <div class="row"><label>🎯 목표점수:</label><select id="optChoseongTarget" ${!isHost?'disabled':''} onchange="updateOptionsToServer()">
+            <option value="10" ${opt.choseongTargetScore==10?'selected':''}>10점</option>
+            <option value="15" ${opt.choseongTargetScore==15?'selected':''}>15점 (기본)</option>
+            <option value="20" ${opt.choseongTargetScore==20?'selected':''}>20점</option>
+            <option value="30" ${opt.choseongTargetScore==30?'selected':''}>30점</option>
+          </select></div>`;
+      }
+      container.innerHTML = html;
+    }
+
+    socket.on('start_game_ui', ({ gameMode }) => {
+      document.getElementById('gamePlayView').style.display = 'block';
+      document.getElementById('rankingView').style.display = 'none';
+      document.getElementById('gameTitle').innerText = `🚀 ${gameMode.toUpperCase()} 게임 플레이 중`;
+      document.getElementById('gameContentArea').innerHTML = `<p>게임이 시작되었습니다! 세부 진행 화면이 구성 중입니다.</p>`;
+    });
+
+    // 최종 순위 및 금/은/동 효과 렌더링
+    socket.on('show_final_ranking', (sortedScores) => {
+      document.getElementById('gamePlayView').style.display = 'none';
+      document.getElementById('rankingView').style.display = 'block';
+      const container = document.getElementById('rankingListContainer');
+      container.innerHTML = '';
+
+      sortedScores.forEach((item, index) => {
+        const rank = index + 1;
+        let className = '';
+        let medal = `${rank}등`;
+        if (rank === 1) { className = 'rank-gold'; medal = '🥇 금메달 (1등)'; }
+        else if (rank === 2) { className = 'rank-silver'; medal = '🥈 은메달 (2등)'; }
+        else if (rank === 3) { className = 'rank-bronze'; medal = '🥉 동메달 (3등)'; }
+
+        const div = document.createElement('div');
+        div.className = className || 'card';
+        div.style.margin = '8px 0';
+        div.style.background = rank > 3 ? '#3d2920' : '';
+        div.innerHTML = `<strong>${medal}</strong> - ${item.username} (${item.score}점)`;
+        container.appendChild(div);
+      });
     });
   </script>
 </body>
