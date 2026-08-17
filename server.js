@@ -18,66 +18,37 @@ function generateRoomCode() {
   return code;
 }
 
-// 초성 퀴즈 데이터베이스
-const CHOSEONG_DATA = [
-  { choseong: 'ㄸㅂㅇ', word: '떡볶이' }, { choseong: 'ㄱㅊㅉㄱ', word: '김치찌개' }, { choseong: 'ㄷㄲㅅ', word: '돈까스' },
-  { choseong: 'ㅉㅈㅁ', word: '짜장면' }, { choseong: 'ㅁㄹㅌ', word: '마라탕' }, { choseong: 'ㅅㄱㅅ', word: '삼겹살' },
-  { choseong: 'ㅊㅂ', word: '초밥' }, { choseong: 'ㅊㅋ', word: '치킨' }, { choseong: 'ㅍㅈ', word: '피자' },
-  { choseong: 'ㅎㅂㄱ', word: '햄버거' }, { choseong: 'ㅍㅅㅌ', word: '파스타' }, { choseong: 'ㅈㅂ', word: '족발' },
-  { choseong: 'ㅂㅆ', word: '보쌈' }, { choseong: 'ㅅㄷㄱ', word: '순대국' }, { choseong: 'ㄴㅁ', word: '냉면' },
-  { choseong: 'ㅋㄱㅅ', word: '칼국수' }, { choseong: 'ㅅㅂㅅㅂ', word: '샤브샤브' }, { choseong: 'ㄱㄹㅁㅇ', word: '계란말이' },
-  { choseong: 'ㄱㅂ', word: '김밥' }, { choseong: 'ㄹㅁ', word: '라면' }, { choseong: 'ㅇㅇㅅㅋㄹ', word: '아이스크림' },
-  { choseong: 'ㅊㅋㄹ', word: '초콜릿' }, { choseong: 'ㅍㅋ', word: '팝콘' }, { choseong: 'ㅂㄴㄴ', word: '바나나' }, { choseong: 'ㅅㄱ', word: '사과' },
-  { choseong: 'ㅎㄹㅇ', word: '호랑이' }, { choseong: 'ㅅㅈ', word: '사자' }, { choseong: 'ㄱㄹ', word: '기린' },
-  { choseong: 'ㅋㄲㄹ', word: '코끼리' }, { choseong: 'ㅍㄷ', word: '판다' }, { choseong: 'ㅍㄱ', word: '펭귄' },
-  { choseong: 'ㄷㄹㄱ', word: '돌고래' }, { choseong: 'ㄱㅇㅇ', word: '고양이' }, { choseong: 'ㄱㅇㅈ', word: '강아지' },
-  { choseong: 'ㅌㄲ', word: '토끼' }, { choseong: 'ㄷㄹㅈ', word: '다람쥐' }, { choseong: 'ㄴㄷ', word: '늑대' },
-  { choseong: 'ㅇㅇ', word: '여우' }, { choseong: 'ㅅㄷ', word: '수달' }, { choseong: 'ㅎㅁ', word: '하마' },
-  { choseong: 'ㅇㄱ', word: '악어' }, { choseong: 'ㄷㅅㄹ', word: '독수리' }, { choseong: 'ㅂㅇㅇ', word: '부엉이' },
-  { choseong: 'ㅋㅁㄹㅇ', word: '카멜레온' }, { choseong: 'ㅂㄱㄱ', word: '북극곰' }, { choseong: 'ㅇㄹㅈ', word: '얼룩말' },
-  { choseong: 'ㅋㅇㄹ', word: '코알라' }, { choseong: 'ㅋㄱㄹ', word: '캥거루' }, { choseong: 'ㅊㅅㅁ', word: '청람쥐' }, { choseong: 'ㄹㅋ', word: '라쿤' },
-  { choseong: 'ㄴㅇㄱㅇ', word: '놀이공원' }, { choseong: 'ㅇㅎㄱ', word: '영화관' }, { choseong: 'ㄷㅅㄱ', word: '도서관' },
-  { choseong: 'ㅎㅅㅇㅈ', word: '해수욕장' }, { choseong: 'ㅁㅅㄱ', word: '미술관' }, { choseong: 'ㅂㅁㄱ', word: '박물관' },
-  { choseong: 'ㄱㅎ', word: '공항' }, { choseong: 'ㅈㅎㅊㅇ', word: '지하철역' }, { choseong: 'ㅍㅇㅈ', word: '편의점' },
-  { choseong: 'ㅋㅍ', word: '카페' }, { choseong: 'ㅇㅌㅍㅋ', word: '워터파크' }, { choseong: 'ㅋㅍㅈ', word: '캠핑장' },
-  { choseong: 'ㄴㄹㅂ', word: '노래방' }, { choseong: 'ㅍㅅㅂ', word: '피시방' }, { choseong: 'ㅁㅇㅅ', word: '미용실' },
-  { choseong: 'ㅂㅎㅈ', word: '백화점' }, { choseong: 'ㄷㅁㅇ', word: '동물원' }, { choseong: 'ㅅㅁㅇ', word: '식물원' },
-  { choseong: 'ㅎㅅㅈ', word: '헬스장' }, { choseong: 'ㅎㄱ', word: '학교' }, { choseong: 'ㅂㅇ', word: '병원' },
-  { choseong: 'ㅇㄱ', word: '약국' }, { choseong: 'ㅇㅊㅇ', word: '유치원' }, { choseong: 'ㄱㅊㅅ', word: '경찰서' }, { choseong: 'ㅅㅂㅅ', word: '소방서' },
-  { choseong: 'ㅅㅁㅌㅍ', word: '스마트폰' }, { choseong: 'ㄴㅌㅂ', word: '노트북' }, { choseong: 'ㅁㅅㅇㅇㅍ', word: '무선이어폰' },
-  { choseong: 'ㅇㄱ', word: '안경' }, { choseong: 'ㅈㄱ', word: '지갑' }, { choseong: 'ㅅㄱ', word: '시계' },
-  { choseong: 'ㅇㅅ', word: '우산' }, { choseong: 'ㅌㅂㄹ', word: '텀블러' }, { choseong: 'ㅂㅈㅂㅌㄹ', word: '보조배터리' },
-  { choseong: 'ㅅㅍㄱ', word: '선풍기' }, { choseong: 'ㄷㄹㅇㄱ', word: '드라이기' }, { choseong: 'ㅊㅅ', word: '칫솔' },
-  { choseong: 'ㄱㅇ', word: '거울' }, { choseong: 'ㅁㅇㅅ', word: '마우스' }, { choseong: 'ㅋㅂㄷ', word: '키보드' },
-  { choseong: 'ㄱㅂ', word: '가방' }, { choseong: 'ㅁㅈ', word: '모자' }, { choseong: 'ㅇㄷㅎ', word: '운동화' },
-  { choseong: 'ㅎㄷㅅ', word: '헤드셋' }, { choseong: 'ㅋㅁㄹ', word: '카메라' }, { choseong: 'ㅈㄱ', word: '자전거' },
-  { choseong: 'ㅈㄱ', word: '전구' }, { choseong: 'ㅎㄴ', word: '하늘' }, { choseong: 'ㅊㄱㅂ', word: '책가방' }, { choseong: 'ㅊㄱㄱ', word: '축구공' }
-];
-
-// 라이어 게임 단어 데이터베이스
-const LIAR_WORDS = {
-  '음식': [
-    '떡볶이', '김치찌개', '돈까스', '짜장면', '마라탕', '삼겹살', '초밥', '치킨', '피자', '햄버거',
-    '파스타', '족발', '보쌈', '순대국', '냉면', '칼국수', '샤브샤브', '계란말이', '김밥', '라면',
-    '아이스크림', '초콜릿', '팝콘', '바나나', '사과', '만두', '비빔밥', '갈비탕', '감자탕', '떡국'
-  ],
-  '동물': [
-    '호랑이', '사자', '기린', '코끼리', '판다', '펭귄', '돌고래', '강아지', '고양이', '토끼',
-    '다람쥐', '늑대', '여우', '수달', '하마', '악어', '독수리', '부엉이', '카멜레온', '북극곰',
-    '얼룩말', '코알라', '캥거루', '청람쥐', '라쿤', '고슴도치', '사슴', '순록', '낙타', '물개'
-  ],
-  '장소': [
-    '놀이공원', '영화관', '도서관', '해수욕장', '미술관', '박물관', '공항', '지하철역', '편의점', '카페',
-    '워터파크', '캠핑장', '노래방', '피시방', '미용실', '백화점', '동물원', '식물원', '헬스장', '학교',
-    '병원', '약국', '유치원', '경찰서', '소방서', '은행', '우체국', '경기장', '스키장', '온천'
-  ],
-  '물건': [
-    '스마트폰', '노트북', '무선이어폰', '안경', '지갑', '시계', '우산', '텀블러', '보조배터리', '선풍기',
-    '드라이기', '칫솔', '거울', '마우스', '키보드', '가방', '모자', '운동화', '헤드셋', '카메라',
-    '자전거', '전구', '책가방', '축구공', '농구공', '야구공', '리모컨', '냉장고', '세탁기', '청소기',
-    '소파', '침대', '식탁', '선글라스', '마스크', '손소독제', '충전기', '가위', '풀', '필통'
-  ]
+// 라이어 게임 단어 (100개, 카테고리별 분할)
+const LIAR_WORDS_DATA = {
+  '음식': ['떡볶이', '김치찌개', '돈까스', '짜장면', '마라탕', '삼겹살', '초밥', '치킨', '피자', '햄버거', '파스타', '족발', '보쌈', '순대국', '냉면', '칼국수', '샤브샤브', '계란말이', '김밥', '라면', '아이스크림', '초콜릿', '팝콘', '바나나', '사과'],
+  '동물': ['호랑이', '사자', '기린', '코끼리', '판다', '펭귄', '돌고래', '강아지', '고양이', '토끼', '다람쥐', '늑대', '여우', '수달', '하마', '악어', '독수리', '부엉이', '카멜레온', '북극곰', '얼룩말', '코알라', '캥거루', '라쿤', '고슴도치'],
+  '장소': ['놀이공원', '영화관', '도서관', '해수욕장', '미술관', '박물관', '공항', '지하철역', '편의점', '카페', '워터파크', '캠핑장', '노래방', '피시방', '미용실', '백화점', '동물원', '식물원', '헬스장', '학교', '병원', '약국', '유치원', '경찰서', '소방서'],
+  '물건': ['스마트폰', '노트북', '무선이어폰', '안경', '지갑', '시계', '우산', '텀블러', '보조배터리', '선풍기', '드라이기', '칫솔', '거울', '마우스', '키보드', '가방', '모자', '운동화', '헤드셋', '카메라', '자전거', '전구', '책가방', '축구공', '농구공']
 };
+
+// 초성 퀴즈 단어 (100개)
+const CHOSEONG_WORDS = [
+  { choseong: 'ㄸㅂㅇ', word: '떡볶이' }, { choseong: 'ㄱㅊㅉㄱ', word: '김치찌개' }, { choseong: 'ㄷㄲㅅ', word: '돈까스' }, { choseong: 'ㅉㅈㅁ', word: '짜장면' }, { choseong: 'ㅁㄹㅌ', word: '마라탕' },
+  { choseong: 'ㅅㄱㅅ', word: '삼겹살' }, { choseong: 'ㅊㅂ', word: '초밥' }, { choseong: 'ㅊㅋ', word: '치킨' }, { choseong: 'ㅍㅈ', word: '피자' }, { choseong: 'ㅎㅂㄱ', word: '햄버거' },
+  { choseong: 'ㅍㅅㅌ', word: '파스타' }, { choseong: 'ㅈㅂ', word: '족발' }, { choseong: 'ㅂㅆ', word: '보쌈' }, { choseong: 'ㅅㄷㄱ', word: '순대국' }, { choseong: 'ㄴㅁ', word: '냉면' },
+  { choseong: 'ㅋㄱㅅ', word: '칼국수' }, { choseong: 'ㅅㅂㅅㅂ', word: '샤브샤브' }, { choseong: 'ㄱㄹㅁㅇ', word: '계란말이' }, { choseong: 'ㄱㅂ', word: '김밥' }, { choseong: 'ㄹㅁ', word: '라면' },
+  { choseong: 'ㅇㅇㅅㅋㄹ', word: '아이스크림' }, { choseong: 'ㅊㅋㄹ', word: '초콜릿' }, { choseong: 'ㅍㅋ', word: '팝콘' }, { choseong: 'ㅂㄴㄴ', word: '바나나' }, { choseong: 'ㅅㄱ', word: '사과' },
+  { choseong: 'ㅎㄹㅇ', word: '호랑이' }, { choseong: 'ㅅㅈ', word: '사자' }, { choseong: 'ㄱㄹ', word: '기린' }, { choseong: 'ㅋㄲㄹ', word: '코끼리' }, { choseong: 'ㅍㄷ', word: '판다' },
+  { choseong: 'ㅍㄱ', word: '펭귄' }, { choseong: 'ㄷㄹㄱ', word: '돌고래' }, { choseong: 'ㄱㅇㅇ', word: '고양이' }, { choseong: 'ㄱㅇㅈ', word: '강아지' }, { choseong: 'ㅌㄲ', word: '토끼' },
+  { choseong: 'ㄷㄹㅈ', word: '다람쥐' }, { choseong: 'ㄴㄷ', word: '늑대' }, { choseong: 'ㅇㅇ', word: '여우' }, { choseong: 'ㅅㄷ', word: '수달' }, { choseong: 'ㅎㅁ', word: '하마' },
+  { choseong: 'ㅇㄱ', word: '악어' }, { choseong: 'ㄷㅅㄹ', word: '독수리' }, { choseong: 'ㅂㅇㅇ', word: '부엉이' }, { choseong: 'ㅋㅁㄹㅇ', word: '카멜레온' }, { choseong: 'ㅂㄱㄱ', word: '북극곰' },
+  { choseong: 'ㅇㄹㅈ', word: '얼룩말' }, { choseong: 'ㅋㅇㄹ', word: '코알라' }, { choseong: 'ㅋㄱㄹ', word: '캥거루' }, { choseong: 'ㄹㅋ', word: '라쿤' }, { choseong: 'ㄱㅅㄷㅊ', word: '고슴도치' },
+  { choseong: 'ㄴㅇㄱㅇ', word: '놀이공원' }, { choseong: 'ㅇㅎㄱ', word: '영화관' }, { choseong: 'ㄷㅅㄱ', word: '도서관' }, { choseong: 'ㅎㅅㅇㅈ', word: '해수욕장' }, { choseong: 'ㅁㅅㄱ', word: '미술관' },
+  { choseong: 'ㅂㅁㄱ', word: '박물관' }, { choseong: 'ㄱㅎ', word: '공항' }, { choseong: 'ㅈㅎㅊㅇ', word: '지하철역' }, { choseong: 'ㅍㅇㅈ', word: '편의점' }, { choseong: 'ㅋㅍ', word: '카페' },
+  { choseong: 'ㅇㅌㅍㅋ', word: '워터파크' }, { choseong: 'ㅋㅍㅈ', word: '캠핑장' }, { choseong: 'ㄴㄹㅂ', word: '노래방' }, { choseong: 'ㅍㅅㅂ', word: '피시방' }, { choseong: 'ㅁㅇㅅ', word: '미용실' },
+  { choseong: 'ㅂㅎㅈ', word: '백화점' }, { choseong: 'ㄷㅁㅇ', word: '동물원' }, { choseong: 'ㅅㅁㅇ', word: '식물원' }, { choseong: 'ㅎㅅㅈ', word: '헬스장' }, { choseong: 'ㅎㄱ', word: '학교' },
+  { choseong: 'ㅂㅇ', word: '병원' }, { choseong: 'ㅇㄱ', word: '약국' }, { choseong: 'ㅇㅊㅇ', word: '유치원' }, { choseong: 'ㄱㅊㅅ', word: '경찰서' }, { choseong: 'ㅅㅂㅅ', word: '소방서' },
+  { choseong: 'ㅅㅁㅌㅍ', word: '스마트폰' }, { choseong: 'ㄴㅌㅂ', word: '노트북' }, { choseong: 'ㅁㅅㅇㅇㅍ', word: '무선이어폰' }, { choseong: 'ㅇㄱ', word: '안경' }, { choseong: 'ㅈㄱ', word: '지갑' },
+  { choseong: 'ㅅㄱ', word: '시계' }, { choseong: 'ㅇㅅ', word: '우산' }, { choseong: 'ㅌㅂㄹ', word: '텀블러' }, { choseong: 'ㅂㅈㅂㅌㄹ', word: '보조배터리' }, { choseong: 'ㅅㅍㄱ', word: '선풍기' },
+  { choseong: 'ㄷㄹㅇㄱ', word: '드라이기' }, { choseong: 'ㅊㅅ', word: '칫솔' }, { choseong: 'ㄱㅇ', word: '거울' }, { choseong: 'ㅁㅇㅅ', word: '마우스' }, { choseong: 'ㅋㅂㄷ', word: '키보드' },
+  { choseong: 'ㄱㅂ', word: '가방' }, { choseong: 'ㅁㅈ', word: '모자' }, { choseong: 'ㅇㄷㅎ', word: '운동화' }, { choseong: 'ㅎㄷㅅ', word: '헤드셋' }, { choseong: 'ㅋㅁㄹ', word: '카메라' },
+  { choseong: 'ㅈㄱ', word: '자전거' }, { choseong: 'ㅈㄱ', word: '전구' }, { choseong: 'ㅊㄱㅂ', word: '책가방' }, { choseong: 'ㅊㄱㄱ', word: '축구공' }, { choseong: 'ㄴㄱㄱ', word: '농구공' }
+];
 
 io.on('connection', (socket) => {
   socket.on('create_room', ({ username }) => {
@@ -86,17 +57,28 @@ io.on('connection', (socket) => {
 
     rooms[roomId] = {
       players: [],
+      scores: {}, // 누적 점수
       host: socket.id,
-      gameMode: 'mafia',
+      gameMode: 'liar',
       gameStarted: false,
-      mafiaCount: 1, // 기본 마피아 수
-      liarCategory: 'all' // 기본 라이어 카테고리
+      gameState: null,
+      options: {
+        liarTime: 25,
+        liarCategory: 'all',
+        mafiaDayTime: 60,
+        mafiaCount: 1,
+        policeCount: 1,
+        doctorCount: 1,
+        shiritoriMinLen: 2,
+        choseongTargetScore: 15
+      }
     };
 
     socket.join(roomId);
     socket.roomId = roomId;
     socket.username = username;
-    rooms[roomId].players.push({ id: socket.id, username });
+    rooms[roomId].players.push({ id: socket.id, username, isDead: false, role: null });
+    rooms[roomId].scores[socket.id] = 0;
 
     socket.emit('join_success', { roomId, username });
     broadcastRoomState(roomId);
@@ -111,7 +93,8 @@ io.on('connection', (socket) => {
     socket.join(roomId);
     socket.roomId = roomId;
     socket.username = username;
-    room.players.push({ id: socket.id, username });
+    room.players.push({ id: socket.id, username, isDead: false, role: null });
+    room.scores[socket.id] = 0;
 
     socket.emit('join_success', { roomId, username });
     broadcastRoomState(roomId);
@@ -125,54 +108,59 @@ io.on('connection', (socket) => {
     }
   });
 
-  // 마피아 세부 설정 변경 (방장 권한)
-  socket.on('change_mafia_settings', ({ roomId, mafiaCount }) => {
+  socket.on('update_options', ({ roomId, options }) => {
     const room = rooms[roomId];
     if (room && room.host === socket.id && !room.gameStarted) {
-      room.mafiaCount = parseInt(mafiaCount);
+      room.options = { ...room.options, ...options };
       broadcastRoomState(roomId);
     }
   });
 
-  // 라이어 카테고리 설정 변경 (방장 권한)
-  socket.on('change_liar_settings', ({ roomId, liarCategory }) => {
-    const room = rooms[roomId];
-    if (room && room.host === socket.id && !room.gameStarted) {
-      room.liarCategory = liarCategory;
-      broadcastRoomState(roomId);
-    }
-  });
-
-  socket.on('leave_room', () => handleLeave(socket));
-
+  // 게임 시작 버튼
   socket.on('start_game', ({ roomId }) => {
     const room = rooms[roomId];
     if (!room || room.host !== socket.id) return;
+    const pCount = room.players.length;
 
-    const playerCount = room.players.length;
-
-    if (room.gameMode === 'mafia' && playerCount < 6) {
-      return io.to(roomId).emit('system_message', '⚠️ 마피아 게임은 최소 6명 이상 필요합니다.');
-    }
-    if (room.gameMode === 'liar' && playerCount < 3) {
-      return io.to(roomId).emit('system_message', '⚠️ 라이어 게임은 최소 3명 이상 필요합니다.');
-    }
-    if (room.gameMode === 'shiritori' && playerCount < 2) {
-      return io.to(roomId).emit('system_message', '⚠️ 끝말잇기는 최소 2명 이상 필요합니다.');
-    }
-    if (room.gameMode === 'choseong' && playerCount < 2) {
-      return io.to(roomId).emit('system_message', '⚠️ 초성 퀴즈는 최소 2명 이상 필요합니다.');
-    }
+    // 인원 검증
+    if (room.gameMode === 'liar' && (pCount < 3)) return io.to(roomId).emit('system_message', '⚠️ 라이어 게임은 최소 3명 이상 필요합니다.');
+    if (room.gameMode === 'mafia' && (pCount < 6 || pCount > 18)) return io.to(roomId).emit('system_message', '⚠️ 마피아 게임은 6명~18명만 가능합니다.');
+    if (room.gameMode === 'shiritori' && (pCount < 2 || pCount > 8)) return io.to(roomId).emit('system_message', '⚠️ 끝말잇기는 2명~8명만 가능합니다.');
+    if (room.gameMode === 'choseong' && (pCount < 2 || pCount > 8)) return io.to(roomId).emit('system_message', '⚠️ 초성 퀴즈는 2명~8명만 가능합니다.');
 
     room.gameStarted = true;
-    io.to(roomId).emit('system_message', `🚀 [${room.gameMode}] 게임이 시작되었습니다!`);
+    room.players.forEach(p => { p.isDead = false; });
+
+    // 모드별 초기화 로직 수행 후 게임 화면 전환
+    io.to(roomId).emit('start_game_ui', { gameMode: room.gameMode });
+    broadcastRoomState(roomId);
+  });
+
+  // 방장 전용 게임 종료 버튼 (총점 및 순위 공개)
+  socket.on('end_game_by_host', ({ roomId }) => {
+    const room = rooms[roomId];
+    if (!room || room.host !== socket.id) return;
+
+    room.gameStarted = false;
+    room.gameState = null;
+
+    // 점수 오름차순 정렬 (등수가 낮은 사람부터 공개하기 위해)
+    const sortedScores = Object.entries(room.scores)
+      .map(([id, score]) => ({ id, username: room.players.find(p => p.id === id)?.username || '알 수 없음', score }))
+      .sort((a, b) => a.score - b.score);
+
+    io.to(roomId).emit('show_final_ranking', sortedScores);
     broadcastRoomState(roomId);
   });
 
   socket.on('send_message', ({ roomId, message }) => {
     const room = rooms[roomId];
     if (!room) return;
-    io.to(roomId).emit('receive_message', { username: socket.username, message });
+    const sender = room.players.find(p => p.id === socket.id);
+    const isDead = sender ? sender.isDead : false;
+
+    // 죽은 사람은 관전 채팅방으로 전송
+    io.to(roomId).emit('receive_message', { username: socket.username, message, isDead });
   });
 
   socket.on('disconnect', () => handleLeave(socket));
@@ -184,6 +172,7 @@ function handleLeave(socket) {
 
   const room = rooms[roomId];
   room.players = room.players.filter(p => p.id !== socket.id);
+  delete room.scores[socket.id];
 
   if (room.players.length === 0) {
     delete rooms[roomId];
@@ -208,8 +197,8 @@ function broadcastRoomState(roomId) {
     host: room.host,
     gameMode: room.gameMode,
     gameStarted: room.gameStarted,
-    mafiaCount: room.mafiaCount,
-    liarCategory: room.liarCategory
+    options: room.options,
+    scores: room.scores
   });
 }
 
