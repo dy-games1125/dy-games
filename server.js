@@ -1,67 +1,29 @@
-const express = require('express');
 const http = require('http');
+const express = require('express');
 const { Server } = require('socket.io');
 
 const app = express();
 const server = http.createServer(app);
-const io = new Server(server, { cors: { origin: "*" } });
+const io = new Server(server);
 
-app.use(express.static('public'));
+app.use(express.static(__dirname));
 
 const rooms = {};
 
-function generateRoomCode() {
-  let code;
-  do {
-    code = Math.floor(100000 + Math.random() * 900000).toString();
-  } while (rooms[code]);
-  return code;
-}
-
-// 라이어 게임 단어 (100개, 카테고리별 분할)
-const LIAR_WORDS_DATA = {
-  '음식': ['떡볶이', '김치찌개', '돈까스', '짜장면', '마라탕', '삼겹살', '초밥', '치킨', '피자', '햄버거', '파스타', '족발', '보쌈', '순대국', '냉면', '칼국수', '샤브샤브', '계란말이', '김밥', '라면', '아이스크림', '초콜릿', '팝콘', '바나나', '사과'],
-  '동물': ['호랑이', '사자', '기린', '코끼리', '판다', '펭귄', '돌고래', '강아지', '고양이', '토끼', '다람쥐', '늑대', '여우', '수달', '하마', '악어', '독수리', '부엉이', '카멜레온', '북극곰', '얼룩말', '코알라', '캥거루', '라쿤', '고슴도치'],
-  '장소': ['놀이공원', '영화관', '도서관', '해수욕장', '미술관', '박물관', '공항', '지하철역', '편의점', '카페', '워터파크', '캠핑장', '노래방', '피시방', '미용실', '백화점', '동물원', '식물원', '헬스장', '학교', '병원', '약국', '유치원', '경찰서', '소방서'],
-  '물건': ['스마트폰', '노트북', '무선이어폰', '안경', '지갑', '시계', '우산', '텀블러', '보조배터리', '선풍기', '드라이기', '칫솔', '거울', '마우스', '키보드', '가방', '모자', '운동화', '헤드셋', '카메라', '자전거', '전구', '책가방', '축구공', '농구공']
-};
-
-// 초성 퀴즈 단어 (100개)
-const CHOSEONG_WORDS = [
-  { choseong: 'ㄸㅂㅇ', word: '떡볶이' }, { choseong: 'ㄱㅊㅉㄱ', word: '김치찌개' }, { choseong: 'ㄷㄲㅅ', word: '돈까스' }, { choseong: 'ㅉㅈㅁ', word: '짜장면' }, { choseong: 'ㅁㄹㅌ', word: '마라탕' },
-  { choseong: 'ㅅㄱㅅ', word: '삼겹살' }, { choseong: 'ㅊㅂ', word: '초밥' }, { choseong: 'ㅊㅋ', word: '치킨' }, { choseong: 'ㅍㅈ', word: '피자' }, { choseong: 'ㅎㅂㄱ', word: '햄버거' },
-  { choseong: 'ㅍㅅㅌ', word: '파스타' }, { choseong: 'ㅈㅂ', word: '족발' }, { choseong: 'ㅂㅆ', word: '보쌈' }, { choseong: 'ㅅㄷㄱ', word: '순대국' }, { choseong: 'ㄴㅁ', word: '냉면' },
-  { choseong: 'ㅋㄱㅅ', word: '칼국수' }, { choseong: 'ㅅㅂㅅㅂ', word: '샤브샤브' }, { choseong: 'ㄱㄹㅁㅇ', word: '계란말이' }, { choseong: 'ㄱㅂ', word: '김밥' }, { choseong: 'ㄹㅁ', word: '라면' },
-  { choseong: 'ㅇㅇㅅㅋㄹ', word: '아이스크림' }, { choseong: 'ㅊㅋㄹ', word: '초콜릿' }, { choseong: 'ㅍㅋ', word: '팝콘' }, { choseong: 'ㅂㄴㄴ', word: '바나나' }, { choseong: 'ㅅㄱ', word: '사과' },
-  { choseong: 'ㅎㄹㅇ', word: '호랑이' }, { choseong: 'ㅅㅈ', word: '사자' }, { choseong: 'ㄱㄹ', word: '기린' }, { choseong: 'ㅋㄲㄹ', word: '코끼리' }, { choseong: 'ㅍㄷ', word: '판다' },
-  { choseong: 'ㅍㄱ', word: '펭귄' }, { choseong: 'ㄷㄹㄱ', word: '돌고래' }, { choseong: 'ㄱㅇㅇ', word: '고양이' }, { choseong: 'ㄱㅇㅈ', word: '강아지' }, { choseong: 'ㅌㄲ', word: '토끼' },
-  { choseong: 'ㄷㄹㅈ', word: '다람쥐' }, { choseong: 'ㄴㄷ', word: '늑대' }, { choseong: 'ㅇㅇ', word: '여우' }, { choseong: 'ㅅㄷ', word: '수달' }, { choseong: 'ㅎㅁ', word: '하마' },
-  { choseong: 'ㅇㄱ', word: '악어' }, { choseong: 'ㄷㅅㄹ', word: '독수리' }, { choseong: 'ㅂㅇㅇ', word: '부엉이' }, { choseong: 'ㅋㅁㄹㅇ', word: '카멜레온' }, { choseong: 'ㅂㄱㄱ', word: '북극곰' },
-  { choseong: 'ㅇㄹㅈ', word: '얼룩말' }, { choseong: 'ㅋㅇㄹ', word: '코알라' }, { choseong: 'ㅋㄱㄹ', word: '캥거루' }, { choseong: 'ㄹㅋ', word: '라쿤' }, { choseong: 'ㄱㅅㄷㅊ', word: '고슴도치' },
-  { choseong: 'ㄴㅇㄱㅇ', word: '놀이공원' }, { choseong: 'ㅇㅎㄱ', word: '영화관' }, { choseong: 'ㄷㅅㄱ', word: '도서관' }, { choseong: 'ㅎㅅㅇㅈ', word: '해수욕장' }, { choseong: 'ㅁㅅㄱ', word: '미술관' },
-  { choseong: 'ㅂㅁㄱ', word: '박물관' }, { choseong: 'ㄱㅎ', word: '공항' }, { choseong: 'ㅈㅎㅊㅇ', word: '지하철역' }, { choseong: 'ㅍㅇㅈ', word: '편의점' }, { choseong: 'ㅋㅍ', word: '카페' },
-  { choseong: 'ㅇㅌㅍㅋ', word: '워터파크' }, { choseong: 'ㅋㅍㅈ', word: '캠핑장' }, { choseong: 'ㄴㄹㅂ', word: '노래방' }, { choseong: 'ㅍㅅㅂ', word: '피시방' }, { choseong: 'ㅁㅇㅅ', word: '미용실' },
-  { choseong: 'ㅂㅎㅈ', word: '백화점' }, { choseong: 'ㄷㅁㅇ', word: '동물원' }, { choseong: 'ㅅㅁㅇ', word: '식물원' }, { choseong: 'ㅎㅅㅈ', word: '헬스장' }, { choseong: 'ㅎㄱ', word: '학교' },
-  { choseong: 'ㅂㅇ', word: '병원' }, { choseong: 'ㅇㄱ', word: '약국' }, { choseong: 'ㅇㅊㅇ', word: '유치원' }, { choseong: 'ㄱㅊㅅ', word: '경찰서' }, { choseong: 'ㅅㅂㅅ', word: '소방서' },
-  { choseong: 'ㅅㅁㅌㅍ', word: '스마트폰' }, { choseong: 'ㄴㅌㅂ', word: '노트북' }, { choseong: 'ㅁㅅㅇㅇㅍ', word: '무선이어폰' }, { choseong: 'ㅇㄱ', word: '안경' }, { choseong: 'ㅈㄱ', word: '지갑' },
-  { choseong: 'ㅅㄱ', word: '시계' }, { choseong: 'ㅇㅅ', word: '우산' }, { choseong: 'ㅌㅂㄹ', word: '텀블러' }, { choseong: 'ㅂㅈㅂㅌㄹ', word: '보조배터리' }, { choseong: 'ㅅㅍㄱ', word: '선풍기' },
-  { choseong: 'ㄷㄹㅇㄱ', word: '드라이기' }, { choseong: 'ㅊㅅ', word: '칫솔' }, { choseong: 'ㄱㅇ', word: '거울' }, { choseong: 'ㅁㅇㅅ', word: '마우스' }, { choseong: 'ㅋㅂㄷ', word: '키보드' },
-  { choseong: 'ㄱㅂ', word: '가방' }, { choseong: 'ㅁㅈ', word: '모자' }, { choseong: 'ㅇㄷㅎ', word: '운동화' }, { choseong: 'ㅎㄷㅅ', word: '헤드셋' }, { choseong: 'ㅋㅁㄹ', word: '카메라' },
-  { choseong: 'ㅈㄱ', word: '자전거' }, { choseong: 'ㅈㄱ', word: '전구' }, { choseong: 'ㅊㄱㅂ', word: '책가방' }, { choseong: 'ㅊㄱㄱ', word: '축구공' }, { choseong: 'ㄴㄱㄱ', word: '농구공' }
-];
-
 io.on('connection', (socket) => {
+  let currentRoomId = null;
+  let currentUsername = null;
+
   socket.on('create_room', ({ username }) => {
-    if (!username) return;
-    const roomId = generateRoomCode();
+    const roomId = Math.random().toString(36).substring(2, 8).toUpperCase();
+    currentRoomId = roomId;
+    currentUsername = username;
 
     rooms[roomId] = {
-      players: [],
-      scores: {}, // 누적 점수
+      roomId,
       host: socket.id,
-      gameMode: 'liar',
       gameStarted: false,
-      gameState: null,
+      gameMode: 'liar',
       options: {
         liarTime: 25,
         liarCategory: 'all',
@@ -71,135 +33,146 @@ io.on('connection', (socket) => {
         doctorCount: 1,
         shiritoriMinLen: 2,
         choseongTargetScore: 15
-      }
+      },
+      players: [{ id: socket.id, username, isDead: false }],
+      rpsChoices: {}
     };
 
     socket.join(roomId);
-    socket.roomId = roomId;
-    socket.username = username;
-    rooms[roomId].players.push({ id: socket.id, username, isDead: false, role: null });
-    rooms[roomId].scores[socket.id] = 0;
-
-    socket.emit('join_success', { roomId, username });
-    broadcastRoomState(roomId);
+    socket.emit('join_success', { roomId });
+    io.to(roomId).emit('update_room', rooms[roomId]);
+    io.to(roomId).emit('system_message', `${username}님이 방을 만들었습니다.`);
   });
 
   socket.on('join_room', ({ roomId, username }) => {
-    if (!roomId || !username) return;
     const room = rooms[roomId];
-    if (!room) return socket.emit('system_message', '⚠️ 존재하지 않는 방입니다.');
-    if (room.gameStarted) return socket.emit('system_message', '⚠️ 이미 게임이 시작된 방입니다.');
+    if (!room) {
+      return socket.emit('system_message', '존재하지 않는 방 코드입니다.');
+    }
+    if (room.gameStarted) {
+      return socket.emit('system_message', '이미 게임이 시작된 방입니다.');
+    }
+
+    currentRoomId = roomId;
+    currentUsername = username;
+    room.players.push({ id: socket.id, username, isDead: false });
 
     socket.join(roomId);
-    socket.roomId = roomId;
-    socket.username = username;
-    room.players.push({ id: socket.id, username, isDead: false, role: null });
-    room.scores[socket.id] = 0;
-
-    socket.emit('join_success', { roomId, username });
-    broadcastRoomState(roomId);
+    socket.emit('join_success', { roomId });
+    io.to(roomId).emit('update_room', room);
+    io.to(roomId).emit('system_message', `${username}님이 입장했습니다.`);
   });
+
+  socket.on('leave_room', () => {
+    handleLeaveRoom(socket);
+  });
+
+  socket.on('disconnect', () => {
+    handleLeaveRoom(socket);
+  });
+
+  function handleLeaveRoom(sock) {
+    if (!currentRoomId || !rooms[currentRoomId]) return;
+    const room = rooms[currentRoomId];
+    room.players = room.players.filter(p => p.id !== sock.id);
+
+    if (room.players.length === 0) {
+      delete rooms[currentRoomId];
+    } else {
+      if (room.host === sock.id) {
+        room.host = room.players[0].id;
+        io.to(currentRoomId).emit('system_message', `방장이 ${room.players[0].username}님으로 변경되었습니다.`);
+      }
+      io.to(currentRoomId).emit('update_room', room);
+    }
+    sock.leave(currentRoomId);
+    currentRoomId = null;
+    currentUsername = null;
+  }
 
   socket.on('change_game_mode', ({ roomId, gameMode }) => {
     const room = rooms[roomId];
-    if (room && room.host === socket.id && !room.gameStarted) {
+    if (room && room.host === socket.id) {
       room.gameMode = gameMode;
-      broadcastRoomState(roomId);
+      io.to(roomId).emit('update_room', room);
     }
   });
 
   socket.on('update_options', ({ roomId, options }) => {
     const room = rooms[roomId];
-    if (room && room.host === socket.id && !room.gameStarted) {
+    if (room && room.host === socket.id) {
       room.options = { ...room.options, ...options };
-      broadcastRoomState(roomId);
+      io.to(roomId).emit('update_room', room);
     }
   });
 
-  // 게임 시작 버튼
   socket.on('start_game', ({ roomId }) => {
     const room = rooms[roomId];
-    if (!room || room.host !== socket.id) return;
-    const pCount = room.players.length;
-
-    // 인원 검증
-    if (room.gameMode === 'liar' && (pCount < 3)) return io.to(roomId).emit('system_message', '⚠️ 라이어 게임은 최소 3명 이상 필요합니다.');
-    if (room.gameMode === 'mafia' && (pCount < 6 || pCount > 18)) return io.to(roomId).emit('system_message', '⚠️ 마피아 게임은 6명~18명만 가능합니다.');
-    if (room.gameMode === 'shiritori' && (pCount < 2 || pCount > 8)) return io.to(roomId).emit('system_message', '⚠️ 끝말잇기는 2명~8명만 가능합니다.');
-    if (room.gameMode === 'choseong' && (pCount < 2 || pCount > 8)) return io.to(roomId).emit('system_message', '⚠️ 초성 퀴즈는 2명~8명만 가능합니다.');
-
-    room.gameStarted = true;
-    room.players.forEach(p => { p.isDead = false; });
-
-    // 모드별 초기화 로직 수행 후 게임 화면 전환
-    io.to(roomId).emit('start_game_ui', { gameMode: room.gameMode });
-    broadcastRoomState(roomId);
+    if (room && room.host === socket.id) {
+      room.gameStarted = true;
+      room.rpsChoices = {};
+      io.to(roomId).emit('update_room', room);
+      io.to(roomId).emit('start_game_ui', { gameMode: room.gameMode });
+      io.to(roomId).emit('system_message', `게임(${room.gameMode.toUpperCase()})이 시작되었습니다!`);
+    }
   });
 
-  // 방장 전용 게임 종료 버튼 (총점 및 순위 공개)
   socket.on('end_game_by_host', ({ roomId }) => {
     const room = rooms[roomId];
-    if (!room || room.host !== socket.id) return;
+    if (room && room.host === socket.id) {
+      room.gameStarted = false;
+      const sortedScores = room.players.map((p, index) => ({
+        username: p.username,
+        score: Math.max(10, 30 - index * 5)
+      })).sort((a, b) => b.score - a.score);
 
-    room.gameStarted = false;
-    room.gameState = null;
-
-    // 점수 오름차순 정렬 (등수가 낮은 사람부터 공개하기 위해)
-    const sortedScores = Object.entries(room.scores)
-      .map(([id, score]) => ({ id, username: room.players.find(p => p.id === id)?.username || '알 수 없음', score }))
-      .sort((a, b) => a.score - b.score);
-
-    io.to(roomId).emit('show_final_ranking', sortedScores);
-    broadcastRoomState(roomId);
+      io.to(roomId).emit('show_final_ranking', sortedScores);
+      io.to(roomId).emit('update_room', room);
+    }
   });
 
   socket.on('send_message', ({ roomId, message }) => {
     const room = rooms[roomId];
     if (!room) return;
-    const sender = room.players.find(p => p.id === socket.id);
-    const isDead = sender ? sender.isDead : false;
-
-    // 죽은 사람은 관전 채팅방으로 전송
-    io.to(roomId).emit('receive_message', { username: socket.username, message, isDead });
+    const player = room.players.find(p => p.id === socket.id);
+    const isDead = player ? player.isDead : false;
+    io.to(roomId).emit('receive_message', { username: currentUsername, message, isDead });
   });
 
-  socket.on('disconnect', () => handleLeave(socket));
+  socket.on('trigger_rps', ({ roomId }) => {
+    const room = rooms[roomId];
+    if (room && room.host === socket.id) {
+      room.rpsChoices = {};
+      io.to(roomId).emit('show_rps_buttons');
+      io.to(roomId).emit('system_message', '가위바위보가 시작되었습니다! 버튼을 눌러주세요.');
+    }
+  });
+
+  socket.on('play_rps', ({ roomId, choice }) => {
+    const room = rooms[roomId];
+    if (!room) return;
+
+    room.rpsChoices[socket.id] = { username: currentUsername, choice };
+
+    if (Object.keys(room.rpsChoices).length === room.players.length) {
+      const playerIds = Object.keys(room.rpsChoices);
+      const randomWinnerKey = playerIds[Math.floor(Math.random() * playerIds.length)];
+      const winnerName = room.rpsChoices[randomWinnerKey].username;
+
+      io.to(roomId).emit('rps_result', { winner: winnerName });
+      io.to(roomId).emit('system_message', `가위바위보 결과! 승리자: ${winnerName}님`);
+    }
+  });
+
+  socket.on('game_input_word', ({ roomId, word }) => {
+    const room = rooms[roomId];
+    if (!room) return;
+
+    io.to(roomId).emit('update_game_word', { username: currentUsername, word });
+  });
 });
 
-function handleLeave(socket) {
-  const roomId = socket.roomId;
-  if (!roomId || !rooms[roomId]) return;
-
-  const room = rooms[roomId];
-  room.players = room.players.filter(p => p.id !== socket.id);
-  delete room.scores[socket.id];
-
-  if (room.players.length === 0) {
-    delete rooms[roomId];
-  } else {
-    if (room.host === socket.id) {
-      room.host = room.players[0].id;
-    }
-    broadcastRoomState(roomId);
-    io.to(roomId).emit('system_message', `👋 [${socket.username}]님이 퇴장하셨습니다.`);
-  }
-
-  socket.leave(roomId);
-  socket.roomId = null;
-}
-
-function broadcastRoomState(roomId) {
-  const room = rooms[roomId];
-  if (!room) return;
-  io.to(roomId).emit('update_room', {
-    roomId,
-    players: room.players,
-    host: room.host,
-    gameMode: room.gameMode,
-    gameStarted: room.gameStarted,
-    options: room.options,
-    scores: room.scores
-  });
-}
-
-server.listen(3000, () => console.log('서버 실행 중: http://localhost:3000'));
+const PORT = process.env.PORT || 3000;
+server.listen(PORT, () => {
+  console.log(`서버가 포트 ${PORT}에서 실행 중입니다.`);
+});
