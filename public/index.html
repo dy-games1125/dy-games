@@ -299,9 +299,10 @@
           </div>
           <div style="background:#2e1e17; padding:10px; border-radius:6px; margin:10px 0; text-align:center;">
             <p>공유된 내용: <strong id="currentWord" style="color:#f39c12; font-size:1.2rem;">없음</strong></p>
+            <p id="usedWordsList" style="font-size:11px; color:#aaa; margin-top:5px;">사용된 단어: 없음</p>
           </div>
           <div class="row" style="gap:5px;">
-            <input type="text" id="gameInput" placeholder="가위바위보 완료 후 입력 가능" style="flex:1;" disabled onkeypress="if(event.keyCode==13) submitGameInput()">
+            <input type="text" id="gameInput" placeholder="가위바위보 완료 후 차례에만 입력 가능" style="flex:1;" disabled onkeypress="if(event.keyCode==13) submitGameInput()">
             <button id="gameSubmitBtn" class="btn" style="background:#10ac84; color:white; padding:8px 12px;" disabled onclick="submitGameInput()">입력</button>
           </div>
         `;
@@ -341,14 +342,29 @@
       if (notice) notice.innerText = `가위바위보 선택 완료! 결과를 기다리는 중...`;
     }
 
-    socket.on('rps_result', ({ winner }) => {
+    // 비겼을 때 다시 버튼을 띄워주는 처리
+    socket.on('rps_draw', ({ message }) => {
       const notice = document.getElementById('turnNotice');
-      if (notice) notice.innerText = `🎉 가위바위보 승리자: ${winner}님! 입력을 시작합니다.`;
+      if (notice) notice.innerText = message;
+      const rpsBtns = document.getElementById('rpsButtons');
+      if (rpsBtns) rpsBtns.style.display = 'flex';
+    });
+
+    socket.on('rps_result', ({ winner, nextTurnId }) => {
+      const notice = document.getElementById('turnNotice');
+      if (notice) notice.innerText = `🎉 가위바위보 승리자: ${winner}님!`;
 
       const inputEl = document.getElementById('gameInput');
       const submitBtn = document.getElementById('gameSubmitBtn');
-      if (inputEl) inputEl.disabled = false;
-      if (submitBtn) submitBtn.disabled = false;
+
+      // 내 차례인 사람만 입력창 활성화 (순서 무시 문제 해결)
+      if (socket.id === nextTurnId) {
+        if (inputEl) { inputEl.disabled = false; inputEl.placeholder = "내 차례입니다! 단어를 입력하세요"; }
+        if (submitBtn) submitBtn.disabled = false;
+      } else {
+        if (inputEl) { inputEl.disabled = true; inputEl.placeholder = `${winner}님의 차례입니다`; }
+        if (submitBtn) submitBtn.disabled = true;
+      }
     });
 
     function submitChoseong() {
@@ -367,9 +383,27 @@
       inputEl.value = '';
     }
 
-    socket.on('update_game_word', ({ username, word }) => {
+    // 단어 실시간 공유 및 턴 제어 동기화 수정
+    socket.on('update_game_word', ({ username, word, nextTurnId, nextTurnName, usedWords }) => {
       const wordEl = document.getElementById('currentWord');
       if (wordEl) wordEl.innerText = `${word} (${username})`;
+
+      const usedEl = document.getElementById('usedWordsList');
+      if (usedEl) usedEl.innerText = `사용된 단어: ${usedWords.join(', ')}`;
+
+      const notice = document.getElementById('turnNotice');
+      if (notice) notice.innerText = `현재 차례: ${nextTurnName}님`;
+
+      const inputEl = document.getElementById('gameInput');
+      const submitBtn = document.getElementById('gameSubmitBtn');
+
+      if (socket.id === nextTurnId) {
+        if (inputEl) { inputEl.disabled = false; inputEl.placeholder = "내 차례입니다! 단어를 입력하세요"; }
+        if (submitBtn) submitBtn.disabled = false;
+      } else {
+        if (inputEl) { inputEl.disabled = true; inputEl.placeholder = `${nextTurnName}님의 차례입니다`; }
+        if (submitBtn) submitBtn.disabled = true;
+      }
     });
 
     socket.on('show_final_ranking', (sortedScores) => {
